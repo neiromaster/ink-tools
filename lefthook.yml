@@ -1,0 +1,12 @@
+pre-commit:
+  commands:
+    check:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc,css}"
+      run: bun run format:biome --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
+    format:
+      glob: "*.{yml,yaml}"
+      run: bun run format:dprint --staged {staged_files}
+      stage_fixed: true
+    typecheck:
+      run: bun run typecheck
