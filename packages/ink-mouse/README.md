@@ -1,15 +1,26 @@
-# ink-mouse
+# @neiropacks/ink-mouse
 
-To install dependencies:
+Mouse support for Ink applications.
 
-```bash
-bun install
-```
-
-To run:
+## Installation
 
 ```bash
-bun run index.ts
+bun add @neiropacks/ink-mouse
+# or
+npm install @neiropacks/ink-mouse
+# or
+yarn add @neiropacks/ink-mouse
+# or
+pnpm add @neiropacks/ink-mouse
 ```
 
-This project was created using `bun init` in bun v1.3.3. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+## Peer Dependencies
+
+This package requires the following peer dependencies:
+
+- `ink` ^6.6.0
+- `react` ^19.2.3
+
+## License
+
+MIT
