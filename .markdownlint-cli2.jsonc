@@ -14,6 +14,7 @@
   },
   "ignores": [
     "node_modules/**",
+    ".changeset/**",
     "packages/*/node_modules/**"
   ]
 }
