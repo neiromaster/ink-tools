@@ -21,7 +21,7 @@
       "name": "@neiropacks/ink-mouse",
       "version": "0.1.0",
       "dependencies": {
-        "@neiropacks/xterm-mouse": "^0.5.1",
+        "@neiropacks/xterm-mouse": "^0.6.0",
       },
       "devDependencies": {
         "@types/react": "^19.2.7",
@@ -193,7 +193,7 @@
 
     "@neiropacks/ink-mouse": ["@neiropacks/ink-mouse@workspace:packages/ink-mouse"],
 
-    "@neiropacks/xterm-mouse": ["@neiropacks/xterm-mouse@0.5.1", "", {}, "sha512-wkr/gP2daOdB2SdK4LqjuKjJ2asRVKHPtYd3CFby9GW8+zs4LjsgewJ7pBSBP83mpJxkz7acCCdrifVb8p/+GQ=="],
+    "@neiropacks/xterm-mouse": ["@neiropacks/xterm-mouse@0.6.0", "", {}, "sha512-4X8Rwewb6xLp2vIg9Vmq06dYfES1fLuiXuo6RCfuZCX+IBnA/4Ds4Qm26qd62FjPHgzFEiW+xl0ZK6C90bXFbw=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 

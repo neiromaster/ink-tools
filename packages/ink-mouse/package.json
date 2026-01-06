@@ -23,7 +23,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@neiropacks/xterm-mouse": "^0.5.1"
+    "@neiropacks/xterm-mouse": "^0.6.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",
