@@ -6,12 +6,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_PROVIDER_OPTIONS, DEV_WARNING, ERRORS, MOUSE_EVENTS } from './constants';
 import { MouseContext, MouseRegistryContext } from './context';
 import { getBoundingClientRect } from './geometry';
-import type { MouseContextValue, MouseRegistryContextValue } from './types';
+import type { BoundingClientRect, MouseContextValue, MouseRegistryContextValue } from './types';
 import { isPointInRect } from './utils/geometry';
 
 type MouseProviderProps = PropsWithChildren<{
   readonly autoEnable?: boolean;
 }>;
+
+type CachedElementState = {
+  isHovering: boolean;
+  bounds?: BoundingClientRect;
+  boundsTimestamp?: number;
+};
+
+const CACHE_INVALIDATION_MS = 16; // ~60fps
 
 export const MouseProvider: FC<MouseProviderProps> = ({
   children,
@@ -39,8 +47,8 @@ export const MouseProvider: FC<MouseProviderProps> = ({
       }
     >
   >(new Map());
-  // Track hover state per element (ref) to determine enter/leave events
-  const hoverStateRef = useRef<WeakMap<React.RefObject<unknown>, boolean>>(new WeakMap());
+  // Track hover state and cached bounds per element (ref)
+  const hoverStateRef = useRef<WeakMap<React.RefObject<unknown>, CachedElementState>>(new WeakMap());
 
   // Unified handler registration
   const registerHandler = useCallback(
@@ -94,151 +102,95 @@ export const MouseProvider: FC<MouseProviderProps> = ({
       setIsEnabled(true);
     }
 
-    // Click event handler
-    const handleClick = (event: XtermMouseEvent): void => {
-      const { x, y } = event;
+    const getCachedState = (ref: React.RefObject<unknown>): CachedElementState => {
+      const existing = hoverStateRef.current.get(ref);
+      const now = Date.now();
 
-      handlersRef.current.forEach((entry) => {
-        if (entry.type !== 'click') return;
+      // Check if cache is valid
+      if (existing?.bounds && existing.boundsTimestamp && now - existing.boundsTimestamp < CACHE_INVALIDATION_MS) {
+        return existing;
+      }
 
-        const bounds = getBoundingClientRect(entry.ref.current as DOMElement | null);
-        if (!bounds) return;
+      // Cache miss or expired - recalculate bounds
+      const bounds = getBoundingClientRect(ref.current as DOMElement | null);
+      const state: CachedElementState = {
+        isHovering: existing?.isHovering ?? false,
+        bounds,
+        boundsTimestamp: now,
+      };
 
-        if (isPointInRect(x, y, bounds)) {
-          (entry.handler as (event: XtermMouseEvent) => void)(event);
-        }
-      });
+      hoverStateRef.current.set(ref, state);
+      return state;
     };
+
+    const createGenericHandler =
+      (eventType: 'click' | 'wheel' | 'mousePress' | 'mouseRelease' | 'mouseMove' | 'mouseDrag') =>
+      (event: XtermMouseEvent): void => {
+        const { x, y } = event;
+
+        handlersRef.current.forEach((entry) => {
+          if (entry.type !== eventType) return;
+
+          const cached = getCachedState(entry.ref);
+          if (!cached.bounds) return;
+
+          if (isPointInRect(x, y, cached.bounds)) {
+            (entry.handler as (event: XtermMouseEvent) => void)(event);
+          }
+        });
+      };
 
     // Move event handler (for hover and mouse move)
     const handleMove = (event: XtermMouseEvent): void => {
       const { x, y } = event;
 
-      // First, handle mouseMove handlers
+      // Handle all event types in a single pass
       handlersRef.current.forEach((entry) => {
-        if (entry.type !== 'mouseMove') return;
+        const cached = getCachedState(entry.ref);
 
-        const bounds = getBoundingClientRect(entry.ref.current as DOMElement | null);
-        if (!bounds) return;
+        if (!cached.bounds) return;
 
-        if (isPointInRect(x, y, bounds)) {
-          (entry.handler as (event: XtermMouseEvent) => void)(event);
-        }
-      });
+        const isInside = isPointInRect(x, y, cached.bounds);
 
-      // Then, handle hover (mouseEnter/mouseLeave) events
-      // Group handlers by ref
-      const refsToHandlers = new Map<
-        React.RefObject<unknown>,
-        { onEnter: Array<(event: XtermMouseEvent) => void>; onLeave: Array<(event: XtermMouseEvent) => void> }
-      >();
+        switch (entry.type) {
+          case 'mouseMove':
+            if (isInside) {
+              (entry.handler as (event: XtermMouseEvent) => void)(event);
+            }
+            break;
 
-      handlersRef.current.forEach((entry) => {
-        if (entry.type === 'mouseEnter' || entry.type === 'mouseLeave') {
-          if (!refsToHandlers.has(entry.ref)) {
-            refsToHandlers.set(entry.ref, { onEnter: [], onLeave: [] });
-          }
-          const handlers = refsToHandlers.get(entry.ref);
-          if (!handlers) {
-            return;
-          }
-          if (entry.type === 'mouseEnter') {
-            handlers.onEnter.push(entry.handler as (event: XtermMouseEvent) => void);
-          } else {
-            handlers.onLeave.push(entry.handler as (event: XtermMouseEvent) => void);
-          }
-        }
-      });
+          case 'mouseEnter':
+            if (isInside !== cached.isHovering) {
+              cached.isHovering = isInside;
+              hoverStateRef.current.set(entry.ref, cached);
+              if (isInside) {
+                (entry.handler as (event: XtermMouseEvent) => void)(event);
+              }
+            }
+            break;
 
-      // Check state changes and trigger handlers
-      refsToHandlers.forEach((handlers, ref) => {
-        const bounds = getBoundingClientRect(ref.current as DOMElement | null);
-        if (!bounds) return;
+          case 'mouseLeave':
+            if (isInside !== cached.isHovering) {
+              cached.isHovering = isInside;
+              hoverStateRef.current.set(entry.ref, cached);
+              if (!isInside) {
+                (entry.handler as (event: XtermMouseEvent) => void)(event);
+              }
+            }
+            break;
 
-        const isInside = isPointInRect(x, y, bounds);
-        const wasInside = hoverStateRef.current.get(ref) ?? false;
-
-        if (isInside !== wasInside) {
-          hoverStateRef.current.set(ref, isInside);
-
-          if (isInside) {
-            // State changed: outside -> inside, trigger all enter handlers
-            handlers.onEnter.forEach((handler) => {
-              void handler(event);
-            });
-          } else {
-            // State changed: inside -> outside, trigger all leave handlers
-            handlers.onLeave.forEach((handler) => {
-              void handler(event);
-            });
-          }
+          default:
+            break;
         }
       });
     };
 
-    // Wheel event handler
-    const handleWheel = (event: XtermMouseEvent): void => {
-      const { x, y } = event;
-
-      handlersRef.current.forEach((entry) => {
-        if (entry.type !== 'wheel') return;
-
-        const bounds = getBoundingClientRect(entry.ref.current as DOMElement | null);
-        if (!bounds) return;
-
-        if (isPointInRect(x, y, bounds)) {
-          (entry.handler as (event: XtermMouseEvent) => void)(event);
-        }
-      });
-    };
-
-    // Press event handler
-    const handlePress = (event: XtermMouseEvent): void => {
-      const { x, y } = event;
-
-      handlersRef.current.forEach((entry) => {
-        if (entry.type !== 'mousePress') return;
-
-        const bounds = getBoundingClientRect(entry.ref.current as DOMElement | null);
-        if (!bounds) return;
-
-        if (isPointInRect(x, y, bounds)) {
-          (entry.handler as (event: XtermMouseEvent) => void)(event);
-        }
-      });
-    };
-
-    // Release event handler
-    const handleRelease = (event: XtermMouseEvent): void => {
-      const { x, y } = event;
-
-      handlersRef.current.forEach((entry) => {
-        if (entry.type !== 'mouseRelease') return;
-
-        const bounds = getBoundingClientRect(entry.ref.current as DOMElement | null);
-        if (!bounds) return;
-
-        if (isPointInRect(x, y, bounds)) {
-          (entry.handler as (event: XtermMouseEvent) => void)(event);
-        }
-      });
-    };
-
-    // Drag event handler
-    const handleDrag = (event: XtermMouseEvent): void => {
-      const { x, y } = event;
-
-      handlersRef.current.forEach((entry) => {
-        if (entry.type !== 'mouseDrag') return;
-
-        const bounds = getBoundingClientRect(entry.ref.current as DOMElement | null);
-        if (!bounds) return;
-
-        if (isPointInRect(x, y, bounds)) {
-          (entry.handler as (event: XtermMouseEvent) => void)(event);
-        }
-      });
-    };
+    // Create handlers from the generic factory
+    const handleClick = createGenericHandler('click');
+    const handleWheel = createGenericHandler('wheel');
+    const handlePress = createGenericHandler('mousePress');
+    const handleRelease = createGenericHandler('mouseRelease');
+    const handleDrag = createGenericHandler('mouseDrag');
 
     // Register event listeners
     mouse.on(MOUSE_EVENTS.CLICK, handleClick);
