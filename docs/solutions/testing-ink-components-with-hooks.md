@@ -606,9 +606,12 @@ bun test --coverage
 ## Cross-References
 
 - **Related Topics:**
+  - [Integration Tests for Ink Mouse Event Workflows](./testing/integration-tests-ink-mouse-event-workflows.md)
+    - Phase 3 integration testing
+  - [Testing React Hooks Error Handling in Monorepo](./testing/testing-react-hooks-error-handling-monorepo.md)
+    - Phase 2 hook testing
   - [Terminal Coordinate Systems](./terminal-coordinate-systems.md)
   - [React Hooks Best Practices](./react-hooks-best-practices.md)
-  - [Ink Component Testing](./ink-component-testing.md)
 
 - **Files Created:**
   - `packages/ink-mouse/test/mocks/ink-element.ts`

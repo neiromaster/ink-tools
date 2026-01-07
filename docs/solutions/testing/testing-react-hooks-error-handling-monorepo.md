@@ -451,6 +451,8 @@ packages/ink-mouse/
 
 - [Testing Ink Components with React Hooks](../testing-ink-components-with-hooks.md)
   - Phase 1 testing implementation
+- [Integration Tests for Ink Mouse Event Workflows](./integration-tests-ink-mouse-event-workflows.md)
+  - Phase 3 integration testing
 - [Terminal Coordinate Systems](../terminal-coordinate-systems.md)
   - Understanding 1-indexed coordinates
 
