@@ -4,6 +4,7 @@
     "MD013": {
       "severity": "warning",
       "line_length": 120,
+      "code_blocks": false,
       "stern": true
     },
     "MD024": {
