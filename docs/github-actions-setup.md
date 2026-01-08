@@ -71,6 +71,8 @@ Trusted Publishing eliminates the need for npm tokens by using OpenID Connect (O
 3. Check that workflow filename matches exactly: `.github/workflows/release.yml`
 4. Ensure npm CLI version is 11.5.1+ (automatically updated in workflow)
 
+For a complete troubleshooting guide including EACCES and E422 errors, see [npm Trusted Publishing OIDC Setup](solutions/ci-cd/npm-trusted-publishing-oidc-setup.md).
+
 #### Error: "Permission denied"
 
 **Cause**: Missing `id-token: write` permission.
