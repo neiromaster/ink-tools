@@ -1,5 +1,71 @@
 # Changelog
 
+## 2.0.0
+
+### Major Changes
+
+- 356968c: Migrate package from `@neiropacks/ink-mouse` to `@ink-tools/ink-mouse` with version 1.0.0.
+
+  ## Breaking Changes
+
+  - **Package renamed**: `@neiropacks/ink-mouse` → `@ink-tools/ink-mouse`
+  - **Repository moved**: `neiropacks/ink-tui-kit` → `neiromaster/ink-tools`
+  - **Major version bump**: 0.2.2 → 1.0.0
+
+  ## Migration Required
+
+  Users need to:
+
+  1. Update dependencies: `bun remove @neiropacks/ink-mouse && bun add @ink-tools/ink-mouse@^1.0.0`
+  2. Update imports: `@neiropacks/ink-mouse` → `@ink-tools/ink-mouse`
+  3. No API changes - all hooks, components, and utilities remain identical
+
+  ## What's Unchanged
+
+  - All APIs remain 100% compatible
+  - All features work identically
+  - Same peer dependencies (ink ^6.6.0, react ^19.2.3)
+  - Same behavior and performance
+
+  ## Documentation
+
+  See [Migration Guide](../docs/migration-guide.md) for detailed migration instructions.
+
+### Patch Changes
+
+- 75cf63a: Migrate `@ink-tools/xterm-mouse` package into monorepo from standalone repository.
+
+  ## What Changed
+
+  - Moved package to `packages/xterm-mouse/`
+  - Updated build configuration for monorepo integration
+  - Updated `ink-mouse` to use workspace dependency (`workspace:*`)
+  - Migrated all 176 tests and 7 examples
+  - Updated documentation with new repository URLs
+  - Added package to monorepo README
+
+  ## What Didn't Change
+
+  - Package name: Still `@ink-tools/xterm-mouse`
+  - API: 100% backward compatible
+  - All functionality preserved
+  - Build output identical to standalone
+
+  ## Testing
+
+  - All 176 xterm-mouse tests passing
+  - All 148 ink-mouse tests passing
+  - Workspace dependency working correctly
+  - Examples run successfully
+
+  ## Impact
+
+  - **For consumers:** No action required. The package works identically.
+  - **For contributors:** Development now happens in the monorepo. Send PRs to the `ink-tools` repository with the `xterm-mouse` label.
+
+- Updated dependencies [75cf63a]
+  - @ink-tools/xterm-mouse@0.7.2
+
 ## 0.2.2
 
 ### Patch Changes
