@@ -7,7 +7,7 @@ problem:
 summary: Testing React hooks that throw errors when used outside providers, with Biome linting rules compliance in a monorepo setup
 
 component:
-  name: "@neiropacks/ink-mouse"
+  name: "@ink-tools/ink-mouse"
   affected_files:
     - src/hooks/mouse-events.test.tsx
     - src/hooks/useMouse.test.tsx

@@ -10,13 +10,13 @@ This document explains how to configure GitHub Actions permissions for the Chang
 
 #### Step 1: Configure Trusted Publisher in npm
 
-1. Go to [@neiropacks/ink-mouse on npm](https://www.npmjs.com/package/@neiropacks/ink-mouse)
+1. Go to [@ink-tools/ink-mouse on npm](https://www.npmjs.com/package/@ink-tools/ink-mouse)
 2. Click **Settings** → **Trusted Publishers**
 3. Click **Add Trusted Publisher**
 4. Select **GitHub Actions**
 5. Fill in:
-   - **Organization**: `neiropacks`
-   - **Repository**: `neiropacks/ink-tui-kit`
+   - **Organization**: `neiromaster`
+   - **Repository**: `neiromaster/ink-tools`
    - **Workflow filename**: `.github/workflows/release.yml`
    - **Environment**: (leave empty)
 6. Click **Create**
@@ -66,8 +66,8 @@ Trusted Publishing eliminates the need for npm tokens by using OpenID Connect (O
 
 **Solutions**:
 
-1. Verify organization name matches GitHub URL exactly: `neiropacks`
-2. Ensure repository is specified fully: `neiropacks/ink-tui-kit`
+1. Verify organization name matches GitHub URL exactly: `neiromaster`
+2. Ensure repository is specified fully: `neiromaster/ink-tools`
 3. Check that workflow filename matches exactly: `.github/workflows/release.yml`
 4. Ensure npm CLI version is 11.5.1+ (automatically updated in workflow)
 
@@ -88,7 +88,7 @@ permissions:
 
 **Cause**: Package doesn't exist on npm yet.
 
-**Solution**: The package `@neiropacks/ink-mouse` version 0.2.0 has already been published, so this error should not occur.
+**Solution**: The package `@ink-tools/ink-mouse` version 1.0.0 has been published, so this error should not occur.
 
 #### Error: "No publisher found"
 

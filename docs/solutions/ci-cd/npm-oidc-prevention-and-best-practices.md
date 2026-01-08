@@ -65,7 +65,7 @@ Use this checklist BEFORE setting up npm Trusted Publishing to avoid common issu
 
   ```bash
   # Verify package exists
-  npm view @neiropacks/package-name
+  npm view @ink-tools/package-name
   ```
 
 - [ ] **Package is scoped**: Use `@scope/package-name` format
@@ -76,7 +76,7 @@ Use this checklist BEFORE setting up npm Trusted Publishing to avoid common issu
 
   ```bash
   # Check if version exists
-  npm view @neiropacks/package-name versions --json | grep "0.2.3"
+  npm view @ink-tools/package-name versions --json | grep "0.2.3"
   ```
 
 #### package.json Configuration
@@ -97,7 +97,7 @@ Use this checklist BEFORE setting up npm Trusted Publishing to avoid common issu
   {
     "repository": {
       "type": "git",
-      "url": "git+https://github.com/neiropacks/ink-tui-kit.git"
+      "url": "git+https://github.com/neiromaster/ink-tools.git"
     }
   }
   ```
@@ -111,10 +111,10 @@ Use this checklist BEFORE setting up npm Trusted Publishing to avoid common issu
 
   ```json
   // Correct
-  "url": "git+https://github.com/neiropacks/ink-tui-kit.git"
+  "url": "git+https://github.com/neiromaster/ink-tools.git"
 
   // Incorrect
-  "url": "git+https://github.com/neiropacks/ink-tui-kit.git/"
+  "url": "git+https://github.com/neiromaster/ink-tools.git/"
   ```
 
 #### GitHub Actions Configuration
@@ -152,8 +152,8 @@ Use this checklist BEFORE setting up npm Trusted Publishing to avoid common issu
 #### npm Dashboard Configuration
 
 - [ ] **Trusted Publisher configured**: For each package in the monorepo
-  - Organization: `neiropacks`
-  - Repository: `neiropacks/ink-tui-kit`
+  - Organization: `neiromaster`
+  - Repository: `neiromaster/ink-tools`
   - Workflow filename: `.github/workflows/release.yml`
   - Environment: (leave empty unless using environments)
 
@@ -235,7 +235,7 @@ npm error package.json: "repository.url" is "",
 {
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neiropacks/ink-tui-kit.git"
+    "url": "git+https://github.com/neiromaster/ink-tools.git"
   }
 }
 ```
@@ -244,10 +244,10 @@ npm error package.json: "repository.url" is "",
 
 ```bash
 # Check repository URL matches
-npm view @neiropacks/package-name repository.url
+npm view @ink-tools/package-name repository.url
 
 # Compare with GitHub URL
-echo "git+https://github.com/neiropacks/ink-tui-kit.git"
+echo "git+https://github.com/neiromaster/ink-tools.git"
 ```
 
 ---
@@ -256,13 +256,13 @@ echo "git+https://github.com/neiropacks/ink-tui-kit.git"
 
 **Problem**: Package defaults to private when publishing
 
-**Cause**: Scoped packages (`@neiropacks/*`) default to private access
+**Cause**: Scoped packages (`@ink-tools/*`) default to private access
 
 **Solution**: Add `publishConfig.access: "public"` to package.json
 
 ```json
 {
-  "name": "@neiropacks/ink-mouse",
+  "name": "@ink-tools/ink-mouse",
   "publishConfig": {
     "access": "public"
   }
@@ -355,7 +355,7 @@ jobs:
 **Error**:
 
 ```text
-npm error expected to match "https://github.com/neiropacks/ink-tui-kit"
+npm error expected to match "https://github.com/neiromaster/ink-tools"
 ```
 
 **Common causes**:
@@ -379,8 +379,8 @@ ls -la .github/workflows/release.yml
 
 **Verification checklist**:
 
-- [ ] Organization: `neiropacks` (lowercase)
-- [ ] Repository: `ink-tui-kit` (lowercase, kebab-case)
+- [ ] Organization: `neiromaster` (lowercase)
+- [ ] Repository: `ink-tools` (lowercase, kebab-case)
 - [ ] Workflow: `.github/workflows/release.yml` (exact path)
 - [ ] Environment: empty (unless using environments)
 
@@ -474,8 +474,8 @@ jobs:
 
 **npm Trusted Publisher configuration** (for each package):
 
-- Organization: `neiropacks`
-- Repository: `neiropacks/ink-tui-kit`
+- Organization: `neiromaster`
+- Repository: `neiromaster/ink-tools`
 - Workflow filename: `.github/workflows/release.yml`
 - Environment: (empty)
 
@@ -491,12 +491,12 @@ jobs:
   release-ui:
     # Publish UI packages
     steps:
-      - run: bun changeset publish --filter @neiropacks/ink-*
+      - run: bun changeset publish --filter @ink-tools/ink-*
 
   release-utils:
     # Publish utility packages
     steps:
-      - run: bun changeset publish --filter @neiropacks/xterm-*
+      - run: bun changeset publish --filter @ink-tools/xterm-*
 ```
 
 **Trade-offs**:
@@ -548,10 +548,10 @@ Always verify provenance after publication:
 
 ```bash
 # Check package has attestations
-npm view @neiropacks/ink-mouse@0.2.2 --json | jq '.attestations'
+npm view @ink-tools/ink-mouse@0.2.2 --json | jq '.attestations'
 
 # Download and verify provenance
-npm view @neiropacks/ink-mouse@0.2.2 --json > package.json
+npm view @ink-tools/ink-mouse@0.2.2 --json > package.json
 cat package.json | jq '.attestations.provenance'
 ```
 
@@ -560,7 +560,7 @@ cat package.json | jq '.attestations.provenance'
 ```json
 {
   "attestations": {
-    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@neiropacks%2fink-mouse@0.2.2",
+    "url": "https://registry.npmjs.org/-/npm/v1/attestations/@ink-tools%2fink-mouse@1.0.0",
     "provenance": {
       "predicateType": "https://slsa.dev/provenance/v1"
     }
@@ -578,11 +578,11 @@ Before attempting OIDC publication:
 
 ```bash
 # 1. Verify package exists on npm
-npm view @neiropacks/package-name
+npm view @ink-tools/package-name
 
 # 2. Check repository URL matches
-npm view @neiropacks/package-name repository.url
-echo "git+https://github.com/neiropacks/ink-tui-kit.git"
+npm view @ink-tools/package-name repository.url
+echo "git+https://github.com/neiromaster/ink-tools.git"
 
 # 3. Verify npm version (must be 11.5.1+)
 npm --version
@@ -618,7 +618,7 @@ Test OIDC with canary tag before production release:
 npm publish --tag canary
 
 # Verify canary has provenance
-npm view @neiropacks/package-name@canary --json | jq '.attestations'
+npm view @ink-tools/package-name@canary --json | jq '.attestations'
 
 # If successful, proceed to production release
 bun changeset publish
@@ -630,17 +630,17 @@ After publication, verify provenance:
 
 ```bash
 # 1. Check attestations exist
-npm view @neiropacks/package-name@version --json | jq '.attestations'
+npm view @ink-tools/package-name@version --json | jq '.attestations'
 
 # 2. Verify SLSA provenance type
-npm view @neiropacks/package-name@version --json | jq '.attestations.provenance.predicateType'
+npm view @ink-tools/package-name@version --json | jq '.attestations.provenance.predicateType'
 # Expected: "https://slsa.dev/provenance/v1"
 
 # 3. Download provenance bundle
-npm view @neiropacks/package-name@version --json | jq -r '.attestations.url' | xargs curl
+npm view @ink-tools/package-name@version --json | jq -r '.attestations.url' | xargs curl
 
 # 4. Verify package metadata
-npm view @neiropacks/package-name@version
+npm view @ink-tools/package-name@version
 ```
 
 ---
@@ -659,7 +659,7 @@ npm --version
 # Must be 11.5.1+ for OIDC
 
 # List existing packages
-npm view @neiropacks/* --json | jq 'keys'
+npm view @ink-tools/* --json | jq 'keys'
 
 # Check current workflow uses NPM_TOKEN
 grep -r "NPM_TOKEN" .github/workflows/
@@ -678,7 +678,7 @@ npm pkg set publishConfig.access=public
 
 # Add repository (if missing)
 npm pkg set repository.type=git
-npm pkg set repository.url="git+https://github.com/neiropacks/ink-tui-kit.git"
+npm pkg set repository.url="git+https://github.com/neiromaster/ink-tools.git"
 
 # Verify changes
 cat package.json | grep -A2 "publishConfig\|repository"
@@ -688,13 +688,13 @@ cat package.json | grep -A2 "publishConfig\|repository"
 
 ```json
 {
-  "name": "@neiropacks/package-name",
+  "name": "@ink-tools/package-name",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neiropacks/ink-tui-kit.git"
+    "url": "git+https://github.com/neiromaster/ink-tools.git"
   }
 }
 ```
@@ -768,13 +768,13 @@ jobs:
 
 For each package in npm:
 
-1. Navigate to package on npm: `https://www.npmjs.com/package/@neiropacks/package-name`
+1. Navigate to package on npm: `https://www.npmjs.com/package/@ink-tools/package-name`
 2. Go to **Settings** → **Trusted Publishers**
 3. Click **Add Trusted Publisher**
 4. Select **GitHub Actions**
 5. Fill in:
-   - **Organization**: `neiropacks`
-   - **Repository**: `neiropacks/ink-tui-kit`
+   - **Organization**: `neiromaster`
+   - **Repository**: `neiromaster/ink-tools`
    - **Workflow filename**: `.github/workflows/release.yml`
    - **Environment**: (leave empty)
 6. Click **Create**
@@ -822,10 +822,10 @@ gh run view --log
 
 ```bash
 # Check published version has attestations
-npm view @neiropacks/package-name@version --json | jq '.attestations'
+npm view @ink-tools/package-name@version --json | jq '.attestations'
 
 # Verify SLSA provenance type
-npm view @neiropacks/package-name@version --json |
+npm view @ink-tools/package-name@version --json |
   jq '.attestations.provenance.predicateType'
 # Expected: "https://slsa.dev/provenance/v1"
 ```
@@ -926,7 +926,7 @@ Keep OIDC configuration but add diagnostics:
 {
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neiropacks/ink-tui-kit.git"
+    "url": "git+https://github.com/neiromaster/ink-tools.git"
   }
 }
 ```
@@ -934,7 +934,7 @@ Keep OIDC configuration but add diagnostics:
 **Verification**:
 
 ```bash
-npm view @neiropacks/package-name repository.url
+npm view @ink-tools/package-name repository.url
 ```
 
 ---
@@ -988,13 +988,13 @@ After first publication, OIDC will work.
 npm --version
 
 # Verify package metadata
-npm view @neiropacks/package-name
+npm view @ink-tools/package-name
 
 # Check repository URL
-npm view @neiropacks/package-name repository.url
+npm view @ink-tools/package-name repository.url
 
 # Verify attestations
-npm view @neiropacks/package-name@version --json | jq '.attestations'
+npm view @ink-tools/package-name@version --json | jq '.attestations'
 
 # Test OIDC configuration (in CI)
 # Add to workflow:

@@ -37,7 +37,7 @@ export function isPointInRect(x: number, y: number, rect: BoundingClientRect): b
  * @example
  * ```ts
  * // Position a tooltip at the center of a button
- * import { getBoundingClientRect, getRectCenter } from '@neiropacks/ink-mouse';
+ * import { getBoundingClientRect, getRectCenter } from '@ink-tools/ink-mouse';
  *
  * const buttonRect = getBoundingClientRect(buttonRef.current);
  * if (buttonRect) {
@@ -73,7 +73,7 @@ export function getRectCenter(rect: BoundingClientRect): { x: number; y: number 
  * @example
  * ```ts
  * // Check if a dragged element overlaps with drop zones
- * import { useBoundingClientRect, isRectOverlapping } from '@neiropacks/ink-mouse';
+ * import { useBoundingClientRect, isRectOverlapping } from '@ink-tools/ink-mouse';
  *
  * function DragItem() {
  *   const dragRect = useBoundingClientRect(dragRef);

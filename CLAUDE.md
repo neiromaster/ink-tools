@@ -403,7 +403,7 @@ Example package.json for an Ink package:
 
 ```json
 {
-  "name": "@neiropacks/ink-package",
+  "name": "@ink-tools/ink-package",
   "version": "0.1.0",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

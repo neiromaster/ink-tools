@@ -61,7 +61,7 @@ npm error 422 Unprocessable Entity
 npm error Error verifying sigstore provenance bundle:
 npm error Failed to validate repository information:
 npm error package.json: "repository.url" is "",
-npm error expected to match "https://github.com/neiropacks/ink-tui-kit" from provenance
+npm error expected to match "https://github.com/neiromaster/ink-tools" from provenance
 ```
 
 **Cause**: npm's provenance validation requires the `repository.url` field in package.json to exactly match the GitHub repository URL.
@@ -176,34 +176,34 @@ Add required fields for npm provenance:
 
 ```json
 {
-  "name": "@neiropacks/ink-mouse",
+  "name": "@ink-tools/ink-mouse",
   "version": "0.2.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neiropacks/ink-tui-kit.git"
+    "url": "git+https://github.com/neiromaster/ink-tools.git"
   }
 }
 ```
 
 **Critical fields**:
 
-- `publishConfig.access: "public"` - Required for scoped packages (`@neiropacks/*`)
+- `publishConfig.access: "public"` - Required for scoped packages (`@ink-tools/*`)
 - `repository.url` - Must match GitHub repository **exactly** for provenance validation
 
 ### Step 3: Configure Trusted Publisher in npm
 
 For each package, configure Trusted Publisher in npm dashboard:
 
-1. Go to package on npm: <https://www.npmjs.com/package/@neiropacks/ink-mouse>
+1. Go to package on npm: <https://www.npmjs.com/package/@ink-tools/ink-mouse>
 2. Navigate to **Settings** → **Trusted Publishers**
 3. Click **Add Trusted Publisher**
 4. Select **GitHub Actions**
 5. Fill in:
-   - **Organization**: `neiropacks`
-   - **Repository**: `neiropacks/ink-tui-kit`
+   - **Organization**: `neiromaster`
+   - **Repository**: `neiromaster/ink-tools`
    - **Workflow filename**: `.github/workflows/release.yml`
    - **Environment**: (leave empty)
 6. Click **Create**
@@ -215,7 +215,7 @@ For each package, configure Trusted Publisher in npm dashboard:
 ### 1. Check Package has Attestations
 
 ```bash
-npm view @neiropacks/ink-mouse@0.2.2 --json | grep attestations
+npm view @ink-tools/ink-mouse@0.2.2 --json | grep attestations
 ```
 
 Expected output:
@@ -232,13 +232,13 @@ Expected output:
 ### 2. Verify Package Metadata
 
 ```bash
-npm view @neiropacks/ink-mouse@0.2.2
+npm view @ink-tools/ink-mouse@0.2.2
 ```
 
 ### 3. Check Published Versions
 
 ```bash
-npm view @neiropacks/ink-mouse versions --json
+npm view @ink-tools/ink-mouse versions --json
 ```
 
 Expected: Version 0.2.2 appears in the list with provenance.

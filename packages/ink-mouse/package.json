@@ -1,6 +1,6 @@
 {
-  "name": "@neiropacks/ink-mouse",
-  "version": "0.2.2",
+  "name": "@ink-tools/ink-mouse",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neiropacks/ink-tui-kit.git"
+    "url": "git+https://github.com/neiromaster/ink-tools.git"
   },
   "exports": {
     ".": {
@@ -32,7 +32,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@neiropacks/xterm-mouse": "^0.6.0"
+    "@ink-tools/xterm-mouse": "^0.7.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",

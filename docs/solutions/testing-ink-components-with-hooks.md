@@ -7,7 +7,7 @@ problem:
 summary: Comprehensive test infrastructure setup for ink-mouse package covering geometry utilities and React hooks
 
 component:
-  name: "@neiropacks/ink-mouse"
+  name: "@ink-tools/ink-mouse"
   affected_files:
     - src/utils/geometry.test.ts
     - src/geometry.test.ts
@@ -53,7 +53,7 @@ prevention:
 
 ## Problem Statement
 
-The `@neiropacks/ink-mouse` package provided critical mouse interaction functionality
+The `@ink-tools/ink-mouse` package provided critical mouse interaction functionality
 for Ink (React for CLIs) applications but had **zero test coverage**. We needed to create
 a comprehensive test suite covering:
 
