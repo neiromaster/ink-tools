@@ -1,5 +1,5 @@
-import type { MouseEvent as XtermMouseEvent } from '@ink-tools/xterm-mouse';
 import type { RefObject } from 'react';
+import type { MouseEvent as XtermMouseEvent } from 'xterm-mouse';
 
 /**
  * DOMRect type - browser standard for element bounding box

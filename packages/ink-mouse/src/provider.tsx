@@ -1,8 +1,8 @@
-import type { MouseEvent as XtermMouseEvent } from '@ink-tools/xterm-mouse';
-import { Mouse } from '@ink-tools/xterm-mouse';
 import type { DOMElement } from 'ink';
 import type { FC, PropsWithChildren } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { MouseEvent as XtermMouseEvent } from 'xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 import { DEFAULT_PROVIDER_OPTIONS, DEV_WARNING, ERRORS, MOUSE_EVENTS } from './constants';
 import { MouseContext, MouseRegistryContext } from './context';
 import { getBoundingClientRect } from './geometry';

@@ -1,4 +1,4 @@
-import type { MouseEvent as XtermMouseEvent } from '@ink-tools/xterm-mouse';
+import type { MouseEvent as XtermMouseEvent } from 'xterm-mouse';
 import type { InkMouseEvent } from '../../src/types';
 
 /**

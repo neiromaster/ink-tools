@@ -1,5 +1,5 @@
-import { Mouse } from '@ink-tools/xterm-mouse';
 import { useContext } from 'react';
+import { Mouse } from 'xterm-mouse';
 import { DEV_WARNING, ERRORS } from '../constants';
 import { MouseContext } from '../context';
 

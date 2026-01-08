@@ -30,10 +30,10 @@
 
     // Path mappings for monorepo workspace packages
     "paths": {
-      "@ink-tools/xterm-mouse": [
+      "xterm-mouse": [
         "./packages/xterm-mouse/src"
       ],
-      "@ink-tools/xterm-mouse/*": [
+      "xterm-mouse/*": [
         "./packages/xterm-mouse/src/*"
       ]
     }

@@ -4,10 +4,10 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@ink-tools/xterm-mouse": [
+      "xterm-mouse": [
         "../xterm-mouse/src"
       ],
-      "@ink-tools/xterm-mouse/*": [
+      "xterm-mouse/*": [
         "../xterm-mouse/src/*"
       ]
     }

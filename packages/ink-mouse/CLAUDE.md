@@ -81,7 +81,7 @@ This package specifically deals with mouse events in terminals:
 
 - `ink` ^6.6.0 - React for CLIs (peer dependency)
 - `react` ^19.2.3 - React (peer dependency)
-- `@ink-tools/xterm-mouse` - Low-level xterm mouse protocol handling
+- `xterm-mouse` - Low-level xterm mouse protocol handling
 
 ## Common Issues
 
