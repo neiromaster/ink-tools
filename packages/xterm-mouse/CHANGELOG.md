@@ -1,5 +1,11 @@
 # @ink-tools/xterm-mouse
 
+## 0.7.3
+
+### Patch Changes
+
+- a91faf5: Test OIDC Trusted Publishing for both scoped and unscoped packages
+
 ## 0.7.2
 
 ### Patch Changes

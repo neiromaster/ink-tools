@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.1
+
+### Patch Changes
+
+- a91faf5: Test OIDC Trusted Publishing for both scoped and unscoped packages
+- Updated dependencies [a91faf5]
+  - xterm-mouse@0.7.3
+
 ## 2.0.0
 
 ### Major Changes
