@@ -7,7 +7,7 @@ problem:
 summary: Comprehensive integration tests for complete mouse interaction workflows in ink-mouse package
 
 component:
-  name: "@neiropacks/ink-mouse"
+  name: "@ink-tools/ink-mouse"
   affected_files:
     - src/integration/integration.test.tsx
     - plans/feat-ink-mouse-add-tests.md

@@ -7,7 +7,7 @@ problem:
 summary: Testing React hooks that throw errors when used outside providers, with Biome linting rules compliance in a monorepo setup
 
 component:
-  name: "@neiropacks/ink-mouse"
+  name: "@ink-tools/ink-mouse"
   affected_files:
     - src/hooks/mouse-events.test.tsx
     - src/hooks/useMouse.test.tsx
@@ -243,7 +243,7 @@ root config, while `"extends": "//"` properly inherits from the parent.
 **File:** `test/mocks/mouse-events.ts`
 
 ```typescript
-import type { MouseEvent as XtermMouseEvent } from '@neiropacks/xterm-mouse';
+import type { MouseEvent as XtermMouseEvent } from '@ink-tools/xterm-mouse';
 import type { InkMouseEvent } from '../../src/types';
 
 export function createMockXtermMouseEvent(

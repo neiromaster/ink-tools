@@ -1,6 +1,6 @@
-# Testing Guide for @neiropacks/ink-mouse
+# Testing Guide for @ink-tools/ink-mouse
 
-This guide helps contributors write effective tests for the `@neiropacks/ink-mouse` package.
+This guide helps contributors write effective tests for the `@ink-tools/ink-mouse` package.
 
 ## Table of Contents
 
@@ -135,7 +135,7 @@ test('renders component', () => {
 ```typescript
 import { render } from 'ink-testing-library';
 import React from 'react';
-import { MouseProvider, useOnClick } from '@neiropacks/ink-mouse';
+import { MouseProvider, useOnClick } from '@ink-tools/ink-mouse';
 
 describe('useOnClick', () => {
   test('registers handler on mount', () => {
@@ -177,7 +177,7 @@ Located in `test/mocks/ink-element.ts`:
 Creates a mock Yoga node with computed layout.
 
 ```typescript
-import { createMockYogaNode } from '@neiropacks/ink-mouse/test/mocks/ink-element';
+import { createMockYogaNode } from '@ink-tools/ink-mouse/test/mocks/ink-element';
 
 const yogaNode = createMockYogaNode({
   left: 10,
@@ -199,7 +199,7 @@ expect(yogaNode.getComputedLayout()).toEqual({
 Creates a mock DOMElement with a yogaNode.
 
 ```typescript
-import { createMockDOMElement } from '@neiropacks/ink-mouse/test/mocks/ink-element';
+import { createMockDOMElement } from '@ink-tools/ink-mouse/test/mocks/ink-element';
 
 const element = createMockDOMElement({
   left: 10,
@@ -222,7 +222,7 @@ expect(element.yogaNode.getComputedLayout()).toEqual({
 Creates a chain of nested elements with parent relationships.
 
 ```typescript
-import { createMockDOMElementChain } from '@neiropacks/ink-mouse/test/mocks/ink-element';
+import { createMockDOMElementChain } from '@ink-tools/ink-mouse/test/mocks/ink-element';
 
 const childElement = createMockDOMElementChain([
   { left: 5, top: 10, width: 50, height: 30 },   // child
@@ -243,7 +243,7 @@ Located in `test/mocks/mouse-events.ts`:
 Creates a mock InkMouseEvent object.
 
 ```typescript
-import { createMockMouseEvent } from '@neiropacks/ink-mouse/test/mocks/mouse-events';
+import { createMockMouseEvent } from '@ink-tools/ink-mouse/test/mocks/mouse-events';
 
 const clickEvent = createMockMouseEvent({
   x: 10,

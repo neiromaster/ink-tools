@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { MouseEvent } from '@neiropacks/xterm-mouse';
+import type { MouseEvent } from '@ink-tools/xterm-mouse';
 import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
 import { useRef } from 'react';

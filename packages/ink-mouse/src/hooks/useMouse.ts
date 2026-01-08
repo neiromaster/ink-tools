@@ -1,4 +1,4 @@
-import { Mouse } from '@neiropacks/xterm-mouse';
+import { Mouse } from '@ink-tools/xterm-mouse';
 import { useContext } from 'react';
 import { DEV_WARNING, ERRORS } from '../constants';
 import { MouseContext } from '../context';

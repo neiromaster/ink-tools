@@ -270,9 +270,9 @@ bun run test:coverage:reporters
 ### Coverage Output Example
 
 ```text
-@neiropacks/your-package test:  All files |  95.26 |  97.44 |
-@neiropacks/your-package test:  src/index.ts           |  100.00 |  100.00 |
-@neiropacks/your-package test:  src/utils.ts            |   90.00 |   85.00 |
+@ink-tools/your-package test:  All files |  95.26 |  97.44 |
+@ink-tools/your-package test:  src/index.ts           |  100.00 |  100.00 |
+@ink-tools/your-package test:  src/utils.ts            |   90.00 |   85.00 |
 ```
 
 **Interpretation:**
@@ -657,4 +657,4 @@ The ink-mouse package achieved:
 
 **Last Updated:** 2025-01-07
 **Pattern Established By:** ink-mouse package testing infrastructure
-**Maintained By:** @neiropacks
+**Maintained By:** @ink-tools

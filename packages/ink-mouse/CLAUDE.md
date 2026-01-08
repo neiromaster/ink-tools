@@ -4,7 +4,7 @@ This file provides guidance for the ink-mouse package.
 
 ## Package Overview
 
-`@neiropacks/ink-mouse` is a package for adding mouse support to Ink applications. It provides
+`@ink-tools/ink-mouse` is a package for adding mouse support to Ink applications. It provides
 React components and hooks for handling mouse events in terminal environments.
 
 ## Development
@@ -81,7 +81,7 @@ This package specifically deals with mouse events in terminals:
 
 - `ink` ^6.6.0 - React for CLIs (peer dependency)
 - `react` ^19.2.3 - React (peer dependency)
-- `@neiropacks/xterm-mouse` - Low-level xterm mouse protocol handling
+- `@ink-tools/xterm-mouse` - Low-level xterm mouse protocol handling
 
 ## Common Issues
 

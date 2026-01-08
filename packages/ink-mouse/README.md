@@ -1,4 +1,4 @@
-# @neiropacks/ink-mouse
+# @ink-tools/ink-mouse
 
 Mouse support for [Ink](https://github.com/vadimdemedes/ink) applications.
 Provides a React-based API for handling mouse events in terminal user
@@ -21,13 +21,13 @@ interfaces.
 ## Installation
 
 ```bash
-bun add @neiropacks/ink-mouse
+bun add @ink-tools/ink-mouse
 # or
-npm install @neiropacks/ink-mouse
+npm install @ink-tools/ink-mouse
 # or
-yarn add @neiropacks/ink-mouse
+yarn add @ink-tools/ink-mouse
 # or
-pnpm add @neiropacks/ink-mouse
+pnpm add @ink-tools/ink-mouse
 ```
 
 ## Peer Dependencies
@@ -42,7 +42,7 @@ This package requires the following peer dependencies:
 ```tsx
 import React from 'react';
 import { Box, Text } from 'ink';
-import { MouseProvider, useOnClick } from '@neiropacks/ink-mouse';
+import { MouseProvider, useOnClick } from '@ink-tools/ink-mouse';
 
 function Button() {
  const ref = React.useRef(null);
@@ -420,7 +420,7 @@ Get the center point of a rectangle. Useful for centering elements, calculating 
 **Example:**
 
 ```tsx
-import { getBoundingClientRect, getRectCenter } from '@neiropacks/ink-mouse';
+import { getBoundingClientRect, getRectCenter } from '@ink-tools/ink-mouse';
 
 function Tooltip() {
  const buttonRect = getBoundingClientRect(buttonRef.current);
@@ -446,7 +446,7 @@ Check if two rectangles overlap. Useful for collision detection and drag-and-dro
 **Example:**
 
 ```tsx
-import { useBoundingClientRect, isRectOverlapping } from '@neiropacks/ink-mouse';
+import { useBoundingClientRect, isRectOverlapping } from '@ink-tools/ink-mouse';
 
 function DragDropZone() {
  const dragRect = useBoundingClientRect(dragRef);
@@ -473,7 +473,7 @@ Check if a point is inside a rectangle. Useful for hit testing.
 **Example:**
 
 ```tsx
-import { isPointInRect } from '@neiropacks/ink-mouse';
+import { isPointInRect } from '@ink-tools/ink-mouse';
 
 const rect = { left: 10, top: 10, right: 20, bottom: 20, width: 10, height: 10, x: 10, y: 10 };
 isPointInRect(15, 15, rect); // true
@@ -510,7 +510,7 @@ Mouse events require terminal support. Most modern terminals support mouse event
 To check if your terminal supports mouse events:
 
 ```tsx
-import { useMouse } from '@neiropacks/ink-mouse';
+import { useMouse } from '@ink-tools/ink-mouse';
 
 function CheckSupport() {
  const { isSupported } = useMouse();
@@ -648,7 +648,7 @@ import {
   createMockYogaNode,
   createMockDOMElement,
   createMockDOMElementChain,
-} from '@neiropacks/ink-mouse/test/mocks/ink-element';
+} from '@ink-tools/ink-mouse/test/mocks/ink-element';
 
 // Create a mock Yoga node with computed layout
 const yogaNode = createMockYogaNode({
@@ -682,7 +682,7 @@ import { render } from 'ink-testing-library';
 import { describe, expect, test } from 'bun:test';
 import React from 'react';
 import { Box, Text } from 'ink';
-import { MouseProvider, useOnClick } from '@neiropacks/ink-mouse';
+import { MouseProvider, useOnClick } from '@ink-tools/ink-mouse';
 
 describe('useOnClick', () => {
   test('registers click handler', () => {
@@ -728,4 +728,4 @@ MIT
 
 ## Related Packages
 
-- [@neiropacks/xterm-mouse](https://github.com/neiropacks/xterm-mouse) - Low-level xterm mouse protocol handler
+- [@ink-tools/xterm-mouse](https://github.com/neiromaster/xterm-mouse) - Low-level xterm mouse protocol handler

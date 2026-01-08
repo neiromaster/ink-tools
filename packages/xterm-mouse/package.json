@@ -1,0 +1,66 @@
+{
+  "name": "@ink-tools/xterm-mouse",
+  "version": "0.7.1",
+  "license": "MIT",
+  "description": "A library for working with the mouse in the terminal.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neiromaster/ink-tools.git",
+    "directory": "packages/xterm-mouse"
+  },
+  "bugs": {
+    "url": "https://github.com/neiromaster/ink-tools/issues"
+  },
+  "homepage": "https://github.com/neiromaster/ink-tools/tree/main/packages/xterm-mouse#readme",
+  "keywords": [
+    "xterm",
+    "terminal",
+    "mouse",
+    "input",
+    "cli",
+    "node",
+    "typescript"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "bun run build",
+    "test": "bun test",
+    "dev:basic": "bun run --watch examples/basic.ts",
+    "dev:streaming": "bun run --watch examples/streaming.ts",
+    "dev:custom-threshold": "bun run --watch examples/custom-threshold.ts",
+    "dev:pause-resume": "bun run --watch examples/pause-resume.ts",
+    "dev:interactive-buttons": "bun run --watch examples/interactive-buttons.ts",
+    "dev:interactive-menu": "bun run --watch examples/interactive-menu.ts",
+    "dev:interactive-grid": "bun run --watch examples/interactive-grid.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
+    "@types/bun": "latest",
+    "dprint": "^0.51.1",
+    "markdownlint-cli2": "^0.20.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ]
+}

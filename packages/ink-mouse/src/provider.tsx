@@ -1,5 +1,5 @@
-import type { MouseEvent as XtermMouseEvent } from '@neiropacks/xterm-mouse';
-import { Mouse } from '@neiropacks/xterm-mouse';
+import type { MouseEvent as XtermMouseEvent } from '@ink-tools/xterm-mouse';
+import { Mouse } from '@ink-tools/xterm-mouse';
 import type { DOMElement } from 'ink';
 import type { FC, PropsWithChildren } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
