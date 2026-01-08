@@ -1,4 +1,4 @@
-# @ink-tools/xterm-mouse
+# xterm-mouse
 
 > A library for working with the mouse in the terminal.
 
@@ -59,7 +59,7 @@ The event object passed to the event listeners has the following structure:
 Before using mouse tracking, you can check if your terminal supports it:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 // Simple boolean check
 if (Mouse.isSupported()) {
@@ -84,11 +84,11 @@ if (result === Mouse.SupportCheckResult.Supported) {
 ### Installation
 
 ```bash
-bun add @ink-tools/xterm-mouse
+bun add xterm-mouse
 # or
-npm install @ink-tools/xterm-mouse
+npm install xterm-mouse
 # or
-yarn add @ink-tools/xterm-mouse
+yarn add xterm-mouse
 ```
 
 ### Usage
@@ -96,7 +96,7 @@ yarn add @ink-tools/xterm-mouse
 #### Basic Usage (Event-based)
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 
@@ -182,7 +182,7 @@ These examples demonstrate how to build interactive terminal UIs using:
 The library provides advanced TypeScript type inference for event handlers. The `on()` and `off()` methods automatically infer the correct event type based on the event name:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 mouse.enable();
@@ -214,7 +214,7 @@ This type inference improves developer experience by:
 For scenarios where you only need to handle a single event, use the `once()` method. The listener automatically removes itself after the first invocation, preventing memory leaks and eliminating manual cleanup:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 mouse.enable();
@@ -256,7 +256,7 @@ The `once()` method provides the same type inference as `on()`, so TypeScript kn
 #### Streaming API Usage
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 
@@ -298,7 +298,7 @@ main().catch(console.error);
 For smooth animations and performance optimization, use the `debouncedMoveEvents()` method to receive move events at a controlled rate. Unlike `eventsOf('move')` which yields every move event, `debouncedMoveEvents()` waits for a quiet period before emitting, ensuring you only get events at a controlled rate.
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 
@@ -385,7 +385,7 @@ The `stream()` and `eventsOf()` methods accept an options object for more advanc
 You can provide an `AbortSignal` to gracefully terminate an async iterator. This is useful for cleanup and resource management, especially in long-running applications.
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 const controller = new AbortController();
@@ -433,7 +433,7 @@ By default, a click is detected when the mouse button press and release occur wi
 The default threshold of 1 allows for slight movement between press and release:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse(); // Uses default threshold of 1
 ```
@@ -443,7 +443,7 @@ const mouse = new Mouse(); // Uses default threshold of 1
 For applications that require precise clicks, set the threshold to 0 to require the press and release to occur at the exact same position:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse(process.stdin, process.stdout, undefined, {
   clickDistanceThreshold: 0, // Require exact position
@@ -453,7 +453,7 @@ const mouse = new Mouse(process.stdin, process.stdout, undefined, {
 For better type safety, you can explicitly type the options object:
 
 ```typescript
-import { Mouse, MouseOptions } from '@ink-tools/xterm-mouse';
+import { Mouse, MouseOptions } from 'xterm-mouse';
 
 const options: MouseOptions = {
   clickDistanceThreshold: 0,
@@ -467,7 +467,7 @@ const mouse = new Mouse(process.stdin, process.stdout, undefined, options);
 For applications that can tolerate more movement, increase the threshold:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse(process.stdin, process.stdout, undefined, {
   clickDistanceThreshold: 5, // Allow up to 5 cells of movement
@@ -483,7 +483,7 @@ For common interaction patterns, the library provides promise-based helper metho
 Wait for a single click event:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 mouse.enable();
@@ -522,7 +522,7 @@ try {
 Wait for any mouse input event (press, release, click, drag, wheel, or move):
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 mouse.enable();
@@ -541,7 +541,7 @@ This is useful for "press any key to continue" style interactions, but with mous
 Get the current mouse position, returning immediately if cached:
 
 ```typescript
-import { Mouse } from '@ink-tools/xterm-mouse';
+import { Mouse } from 'xterm-mouse';
 
 const mouse = new Mouse();
 mouse.enable();
