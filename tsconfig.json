@@ -26,6 +26,16 @@
     // Some stricter flags (disabled by default)
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Path mappings for monorepo workspace packages
+    "paths": {
+      "@ink-tools/xterm-mouse": [
+        "./packages/xterm-mouse/src"
+      ],
+      "@ink-tools/xterm-mouse/*": [
+        "./packages/xterm-mouse/src/*"
+      ]
+    }
   }
 }
