@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.2
+
+### Patch Changes
+
+- 5d22855: Fix: Replace `bun changeset publish` with custom scripts that properly resolve workspace:\* dependencies during publishing. Uses `npm publish --provenance` to maintain OIDC security while ensuring workspace dependencies are converted to actual versions.
+- Updated dependencies [5d22855]
+  - xterm-mouse@0.7.4
+
 ## 2.0.1
 
 ### Patch Changes
