@@ -4,73 +4,33 @@ This document explains how to configure GitHub Actions permissions for the Chang
 
 ## Current Publishing Method
 
-**Note**: This project currently uses `NPM_TOKEN` for npm publishing. Trusted Publishing (OIDC) is planned for the future when npm provides better GitHub Actions integration.
+**Note**: This project uses **Trusted Publishing (OIDC)** for npm publishing. This is the recommended secure approach that eliminates the need for npm tokens.
 
-### Setting Up NPM_TOKEN (Current Method)
+### Setting Up Trusted Publishing (Current Method)
 
-1. Create an npm Automation token:
-   - Go to [npm Access Tokens](https://www.npmjs.com/settings/[your-username]/tokens)
-   - Click **"Generate New Token"** → **"Automation"**
-   - Copy the token (shown only once!)
+#### Step 1: Configure Trusted Publisher in npm
 
-2. Add token to GitHub Secrets:
-   - Repository → **Settings** → **Secrets and variables** → **Actions**
-   - Click **"New repository secret"**
-   - Name: `NPM_TOKEN`
-   - Value: *[paste token]*
-   - **"Add secret"**
+1. Go to [@neiropacks/ink-mouse on npm](https://www.npmjs.com/package/@neiropacks/ink-mouse)
+2. Click **Settings** → **Trusted Publishers**
+3. Click **Add Trusted Publisher**
+4. Select **GitHub Actions**
+5. Fill in:
+   - **Organization**: `neiropacks`
+   - **Repository**: `neiropacks/ink-tui-kit`
+   - **Workflow filename**: `.github/workflows/release.yml`
+   - **Environment**: (leave empty)
+6. Click **Create**
 
-3. Done! The workflow will automatically use `NPM_TOKEN` for publishing.
-
----
-
-## Trusted Publishing with npm (Future)
-
-**Note**: npm Trusted Publishing (OIDC) is the recommended secure approach, but currently has limited GitHub Actions support. This section documents the planned setup for when full integration is available.
-
-### What is Trusted Publishing?
-
-Trusted Publishing eliminates the need for npm tokens by using OpenID Connect (OIDC) to authenticate GitHub Actions directly with npm. Benefits:
-
-- ✅ **No tokens to manage** - No long-lived secrets to rotate or leak
-- ✅ **More secure** - Automatic, short-lived credentials
-- ✅ **Provenance** - Automatically generates software supply chain transparency
-- ✅ **Best practice** - Recommended by npm and GitHub
-
-### Why Not Using It Now?
-
-As of January 2025, npm Trusted Publishing requires:
-
-1. Manual OIDC token exchange (not well integrated with GitHub Actions)
-2. Complex configuration beyond standard npm packages
-3. Limited documentation for GitHub Actions workflows
-
-When npm provides better GitHub Actions integration, we will migrate to Trusted Publishing.
-
-### Setting Up Trusted Publishing (Future Reference)
-
-#### Step 1: Create a Publisher in npm
-
-1. Go to [npm Packages](https://www.npmjs.com/org/neiropacks/packages)
-2. Click on your package (e.g., `@neiropacks/ink-mouse`)
-3. Go to **Publishing** tab
-4. Click **"Add publisher"**
-5. Configure:
-   - **Name**: `github-actions-ink-tui-kit` (or similar)
-   - **GitHub Organization**: `neiropacks`
-   - **Repository**: `ink-tui-kit`
-   - **Workflow name**: `Release` (from `.github/workflows/release.yml`)
-   - **Environment**: (leave empty for now)
-6. Click **"Create publisher"**
-
-Repeat for each package in the monorepo.
+**Note**: Each package needs its own Trusted Publisher configuration in npm.
 
 #### Step 2: Verify Workflow Configuration
 
-The workflow already has the correct configuration:
+The workflow is already configured with the correct settings:
 
 ```yaml
 permissions:
+  contents: write
+  pull-requests: write
   id-token: write  # Required for OIDC
 ```
 
@@ -86,28 +46,32 @@ This permission allows GitHub Actions to generate OIDC tokens for npm authentica
 
 **No NPM_TOKEN secret needed!** ✅
 
+---
+
+## What is Trusted Publishing?
+
+Trusted Publishing eliminates the need for npm tokens by using OpenID Connect (OIDC) to authenticate GitHub Actions directly with npm. Benefits:
+
+- ✅ **No tokens to manage** - No long-lived secrets to rotate or leak
+- ✅ **More secure** - Automatic, short-lived credentials
+- ✅ **Provenance** - Automatically generates software supply chain transparency
+- ✅ **Best practice** - Recommended by npm and GitHub
+- ✅ **Generally available** - npm OIDC is generally available as of July 31, 2025
+
 ### Troubleshooting Trusted Publishing
 
-#### Error: "E404" or "package not found"
+#### Error: "404 Not Found" during publish
 
-**Cause**: Package doesn't exist on npm yet.
+**Cause**: npm cannot match your workflow to the Trusted Publisher configuration.
 
-**Solution**: Publish the package manually once:
+**Solutions**:
 
-```bash
-npm login
-bun changeset publish
-```
+1. Verify organization name matches GitHub URL exactly: `neiropacks`
+2. Ensure repository is specified fully: `neiropacks/ink-tui-kit`
+3. Check that workflow filename matches exactly: `.github/workflows/release.yml`
+4. Ensure npm CLI version is 11.5.1+ (automatically updated in workflow)
 
-After first publication, Trusted Publishing will work.
-
-#### Error: "EPUBLISHCONFLECT"
-
-**Cause**: Package version already exists on npm.
-
-**Solution**: This is normal - Changesets will skip already published versions.
-
-#### Error: "OIDC token not available"
+#### Error: "Permission denied"
 
 **Cause**: Missing `id-token: write` permission.
 
@@ -115,48 +79,32 @@ After first publication, Trusted Publishing will work.
 
 ```yaml
 permissions:
-  id-token: write
+  id-token: write  # This is REQUIRED
 ```
+
+#### Error: "Package not found"
+
+**Cause**: Package doesn't exist on npm yet.
+
+**Solution**: The package `@neiropacks/ink-mouse` version 0.2.0 has already been published, so this error should not occur.
 
 #### Error: "No publisher found"
 
 **Cause**: Trusted Publishing not configured in npm.
 
-**Solution**: Follow "Step 1" above to create a publisher.
-
----
-
-## Alternative: Legacy NPM_TOKEN (Not Recommended)
-
-If you cannot use Trusted Publishing, you can use a traditional npm token. However, this is **not recommended** for security reasons.
-
-### Setup (Not Recommended)
-
-1. Create an npm Automation token: [npmjs.com/settings/tokens](https://www.npmjs.com/settings/[your-username]/tokens)
-2. Add `NPM_TOKEN` to GitHub Secrets
-3. Update workflow to use `NPM_TOKEN: ${{ secrets.NPM_TOKEN }}`
-
-**Why this is not recommended:**
-
-- ❌ Long-lived tokens are security risk
-- ❌ Tokens can leak accidentally
-- ❌ Requires manual token rotation
-- ❌ No automatic provenance generation
-
-Use Trusted Publishing instead whenever possible.
+**Solution**: Follow "Step 1" above to configure Trusted Publisher in npm dashboard.
 
 ---
 
 ## Current Configuration
 
-Both workflow files use **fine-grained permissions** for security:
+The release workflow (`.github/workflows/release.yml`) uses **fine-grained permissions** for security:
 
-- **CI workflow** (`.github/workflows/ci.yml`): `contents: read` only
-- **Release workflow** (`.github/workflows/release.yml`):
-  - `contents: write` - for committing version bumps
-  - `pull-requests: write` - for creating release PRs
+- `contents: write` - for committing version bumps
+- `pull-requests: write` - for creating release PRs
+- `id-token: write` - for generating OIDC tokens for npm authentication
 
-This follows the principle of least privilege - each workflow has only the permissions it needs.
+This follows the principle of least privilege - the workflow has only the permissions it needs.
 
 ## Required GitHub Settings
 
@@ -252,13 +200,14 @@ After configuration, verify it works:
 
 ### Error: "ENEEDAUTH" when publishing to npm
 
-**Cause**: `NPM_TOKEN` secret is not set or expired.
+**Cause**: Trusted Publisher is not configured in npm or configuration is incorrect.
 
 **Solution**:
 
-1. Create or regenerate npm Automation token: [npmjs.com/settings/tokens](https://www.npmjs.com/settings/[your-username]/tokens)
-2. Add/update `NPM_TOKEN` in GitHub Secrets
-3. Re-run the failed workflow
+1. Verify Trusted Publisher is configured in npm for the package
+2. Check that organization, repository, and workflow filename match exactly
+3. Ensure workflow has `id-token: write` permission
+4. Re-run the failed workflow
 
 ### Error: "404 Not Found" when publishing
 
@@ -290,9 +239,7 @@ After first publication, automatic publishing will work.
 - [Changesets: GitHub Action](https://github.com/changesets/action)
 - [Changesets Documentation](https://github.com/changesets/changesets)
 
-### Future Reading: Trusted Publishing
-
-When npm provides better GitHub Actions integration, these resources will be useful:
+### Trusted Publishing
 
 - [npm: About Trusted Publishing](https://docs.npmjs.com/generating-provenance-steps)
 - [npm: Configuring Trusted Publishing](https://docs.npmjs.com/creating-and-viewing-access-tokens#configuring-trusted-publishing)
