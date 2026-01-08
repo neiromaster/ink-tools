@@ -32,7 +32,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@ink-tools/xterm-mouse": "^0.7.0"
+    "@ink-tools/xterm-mouse": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",

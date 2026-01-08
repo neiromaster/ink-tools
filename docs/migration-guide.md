@@ -254,11 +254,12 @@ The old package `@neiropacks/ink-mouse` is **deprecated** as of version 0.3.0:
 ### Additional Packages
 
 More Ink-related tools will be added under `@ink-tools`:
-   - Testing utilities
-   - Component libraries
-   - Developer tools
 
-3. **Improved documentation**: Enhanced examples, guides, and API reference
+- Testing utilities
+- Component libraries
+- Developer tools
+
+1. **Improved documentation**: Enhanced examples, guides, and API reference
 
 ### Staying Informed
 
