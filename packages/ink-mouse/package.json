@@ -7,7 +7,8 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "repository": {
     "type": "git",
@@ -28,17 +29,21 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "prepublishOnly": "bun run build",
-    "test": "bun test"
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "xterm-mouse": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",
+    "@vitest/coverage-v8": "^4.0.16",
     "ink-testing-library": "^4.0.0",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
   },
   "peerDependencies": {
     "ink": "^6.6.0",

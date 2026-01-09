@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import type { InkMouseEvent } from '../types';
 import { filterEvent, hasAnyModifier, hasModifier, transformEvent } from './events';
 

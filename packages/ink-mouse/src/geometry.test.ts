@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test';
 import type { DOMElement } from 'ink';
+import { describe, expect, test } from 'vitest';
 import { createMockDOMElement, createMockDOMElementChain } from '../test/mocks/ink-element';
 import { getBoundingClientRect, getElementDimensions, getElementPosition } from './geometry';
 

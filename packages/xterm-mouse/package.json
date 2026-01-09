@@ -16,7 +16,8 @@
     }
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "repository": {
     "type": "git",
@@ -39,23 +40,27 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "prepublishOnly": "bun run build",
-    "test": "bun test",
-    "dev:basic": "bun run --watch examples/basic.ts",
-    "dev:streaming": "bun run --watch examples/streaming.ts",
-    "dev:custom-threshold": "bun run --watch examples/custom-threshold.ts",
-    "dev:pause-resume": "bun run --watch examples/pause-resume.ts",
-    "dev:interactive-buttons": "bun run --watch examples/interactive-buttons.ts",
-    "dev:interactive-menu": "bun run --watch examples/interactive-menu.ts",
-    "dev:interactive-grid": "bun run --watch examples/interactive-grid.ts"
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "dev:basic": "tsx watch examples/basic.ts",
+    "dev:streaming": "tsx watch examples/streaming.ts",
+    "dev:custom-threshold": "tsx watch examples/custom-threshold.ts",
+    "dev:pause-resume": "tsx watch examples/pause-resume.ts",
+    "dev:interactive-buttons": "tsx watch examples/interactive-buttons.ts",
+    "dev:interactive-menu": "tsx watch examples/interactive-menu.ts",
+    "dev:interactive-grid": "tsx watch examples/interactive-grid.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
-    "@types/bun": "latest",
+    "@vitest/coverage-v8": "^1.0.0",
     "dprint": "^0.51.1",
     "markdownlint-cli2": "^0.20.0",
     "tsup": "^8.5.1",
-    "typescript": "^5"
+    "tsx": "^4.0.0",
+    "typescript": "^5",
+    "vitest": "^1.0.0"
   },
   "files": [
     "dist",

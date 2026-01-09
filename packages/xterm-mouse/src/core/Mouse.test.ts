@@ -1,9 +1,14 @@
-import { describe, expect, mock, test } from 'bun:test';
 import { EventEmitter } from 'node:events';
+import { describe, expect, test, vi } from 'vitest';
 
 import type { MouseEvent, ReadableStreamWithEncoding } from '../types';
 
 import { Mouse } from './Mouse';
+
+// Helper function to replace Bun.sleep()
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function makeFakeTTYStream(): ReadableStreamWithEncoding {
   const fake = new EventEmitter() as ReadableStreamWithEncoding;
@@ -73,23 +78,27 @@ test('Mouse enable/disable should work', () => {
   expect(mouse.isEnabled()).toBe(false);
 });
 
-test('Mouse should emit press event', (done) => {
+test('Mouse should emit press event', async () => {
   // Arrange
   const emitter = new EventEmitter();
   const mouse = new Mouse(makeFakeTTYStream(), process.stdout, emitter);
 
   // Act
-  mouse.on('press', (event) => {
-    // Assert
-    expect(event.action).toBe('press');
-    expect(event.button).toBe('left');
-    mouse.destroy();
-    done();
+  const pressPromise = new Promise<void>((resolve) => {
+    mouse.on('press', (event) => {
+      // Assert
+      expect(event.action).toBe('press');
+      expect(event.button).toBe('left');
+      mouse.destroy();
+      resolve();
+    });
   });
 
   mouse.enable();
   // Simulate a mouse press event
   emitter.emit('press', { action: 'press', button: 'left' });
+
+  await pressPromise;
 });
 
 test('Mouse should handle data events', async () => {
@@ -186,7 +195,7 @@ test('Mouse stream should yield mouse events', async () => {
   }
 });
 
-test('Mouse handleEvent should emit error when event emission fails', (done) => {
+test('Mouse handleEvent should emit error when event emission fails', async () => {
   // Create a mock emitter that throws when emitting 'press' events
   const stream = makeFakeTTYStream();
   const mockEmitter = new EventEmitter();
@@ -209,11 +218,13 @@ test('Mouse handleEvent should emit error when event emission fails', (done) => 
   const mouse = new Mouse(stream, process.stdout, mockEmitter);
 
   // Listen for the error event that should be emitted from the catch block
-  mockEmitter.on('error', (err) => {
-    expect(err).toBeDefined();
-    expect((err as Error).message).toBe('Handler error');
-    mouse.destroy();
-    done();
+  const errorPromise = new Promise<void>((resolve) => {
+    mockEmitter.on('error', (err) => {
+      expect(err).toBeDefined();
+      expect((err as Error).message).toBe('Handler error');
+      mouse.destroy();
+      resolve();
+    });
   });
 
   mouse.enable();
@@ -221,6 +232,8 @@ test('Mouse handleEvent should emit error when event emission fails', (done) => 
   // Act: Emit a valid mouse press event that will trigger the error in the handler
   // This will cause the handler to throw, which is caught and emitted as an 'error' event
   stream.emit('data', Buffer.from('\x1b[<0;10;20M'));
+
+  await errorPromise;
 });
 
 test('Mouse enable should throw error when inputStream is not TTY', () => {
@@ -533,7 +546,7 @@ test('Mouse should not emit click event if distance is too large', async () => {
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;15;25m';
 
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   // Act
@@ -554,7 +567,7 @@ describe('Mouse.once()', () => {
     // Arrange
     const stream = makeFakeTTYStream();
     const mouse = new Mouse(stream);
-    const listenerSpy = mock(() => {});
+    const listenerSpy = vi.fn(() => {});
 
     // Act
     mouse.once('click', listenerSpy);
@@ -579,7 +592,7 @@ describe('Mouse.once()', () => {
     // Arrange
     const stream = makeFakeTTYStream();
     const mouse = new Mouse(stream);
-    const listenerSpy = mock(() => {});
+    const listenerSpy = vi.fn(() => {});
 
     // Act
     mouse.once('press', listenerSpy);
@@ -602,7 +615,7 @@ describe('Mouse.once()', () => {
     // Arrange
     const stream = makeFakeTTYStream();
     const mouse = new Mouse(stream);
-    const listenerSpy = mock((event: MouseEvent) => {
+    const listenerSpy = vi.fn((event: MouseEvent) => {
       // Assert - event.button should be a wheel button type
       expect(['wheel-up', 'wheel-down', 'wheel-left', 'wheel-right']).toContain(event.button);
     });
@@ -626,7 +639,7 @@ describe('Mouse.once()', () => {
     // Arrange
     const stream = makeFakeTTYStream();
     const mouse = new Mouse(stream);
-    const listenerSpy = mock((event: MouseEvent) => {
+    const listenerSpy = vi.fn((event: MouseEvent) => {
       // Assert - event.button should be 'none' for move events
       expect(event.button).toBe('none');
     });
@@ -650,7 +663,7 @@ describe('Mouse.once()', () => {
     // Arrange
     const emitter = new EventEmitter();
     const mouse = new Mouse(makeFakeTTYStream(), process.stdout, emitter);
-    const errorSpy = mock(() => {});
+    const errorSpy = vi.fn(() => {});
     const testError = new Error('Test error');
 
     // Act
@@ -665,7 +678,7 @@ describe('Mouse.once()', () => {
 
     // Emit another error - should not be handled by once() listener
     // Add a catch-all handler to prevent unhandled error
-    const catchAllSpy = mock(() => {});
+    const catchAllSpy = vi.fn(() => {});
     emitter.on('error', catchAllSpy);
     emitter.emit('error', new Error('Second error'));
 
@@ -682,8 +695,8 @@ describe('Mouse.once()', () => {
     // Arrange
     const stream = makeFakeTTYStream();
     const mouse = new Mouse(stream);
-    const onceSpy = mock(() => {});
-    const onSpy = mock(() => {});
+    const onceSpy = vi.fn(() => {});
+    const onSpy = vi.fn(() => {});
 
     // Act
     mouse.once('press', onceSpy);
@@ -776,7 +789,7 @@ test('Mouse.stream() should handle high event volume without significant delay',
         stream.emit('data', Buffer.from(`\x1b[<0;${i % 200};${i % 100}M`));
         // Yield to the event loop every 100 events to allow the consumer to process
         if (i % 100 === 0) {
-          await Bun.sleep(0);
+          await sleep(0);
         }
       }
     })();
@@ -925,7 +938,7 @@ test('Mouse should not emit press events when paused', async () => {
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const pressEvent = '\x1b[<0;10;20M';
-  const pressSpy = mock(() => {});
+  const pressSpy = vi.fn(() => {});
 
   mouse.on('press', pressSpy);
   mouse.enable();
@@ -967,7 +980,7 @@ test('Mouse should not emit release events when paused', async () => {
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const releaseEvent = '\x1b[<0;10;20m';
-  const releaseSpy = mock(() => {});
+  const releaseSpy = vi.fn(() => {});
 
   mouse.on('release', releaseSpy);
   mouse.enable();
@@ -1009,7 +1022,7 @@ test('Mouse should not emit drag events when paused', async () => {
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const dragEvent = '\x1b[<32;15;25M'; // Button 32 = left button with motion bit
-  const dragSpy = mock(() => {});
+  const dragSpy = vi.fn(() => {});
 
   mouse.on('drag', dragSpy);
   mouse.enable();
@@ -1051,7 +1064,7 @@ test('Mouse should not emit wheel events when paused', async () => {
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const wheelEvent = '\x1b[<64;10;20M'; // Button 64 = wheel up
-  const wheelSpy = mock(() => {});
+  const wheelSpy = vi.fn(() => {});
 
   mouse.on('wheel', wheelSpy);
   mouse.enable();
@@ -1093,7 +1106,7 @@ test('Mouse should not emit move events when paused', async () => {
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const moveEvent = '\x1b[<35;10;20M'; // Button 35 = button 3 with motion bit (move)
-  const moveSpy = mock(() => {});
+  const moveSpy = vi.fn(() => {});
 
   mouse.on('move', moveSpy);
   mouse.enable();
@@ -1136,7 +1149,7 @@ test('Mouse should not emit click events when paused', async () => {
   const mouse = new Mouse(stream);
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;10;20m';
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
 
   mouse.on('click', clickSpy);
   mouse.enable();
@@ -1180,11 +1193,11 @@ test('Mouse should block all event types when paused', async () => {
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
 
-  const pressSpy = mock(() => {});
-  const releaseSpy = mock(() => {});
-  const dragSpy = mock(() => {});
-  const wheelSpy = mock(() => {});
-  const moveSpy = mock(() => {});
+  const pressSpy = vi.fn(() => {});
+  const releaseSpy = vi.fn(() => {});
+  const dragSpy = vi.fn(() => {});
+  const wheelSpy = vi.fn(() => {});
+  const moveSpy = vi.fn(() => {});
 
   mouse.on('press', pressSpy);
   mouse.on('release', releaseSpy);
@@ -1237,8 +1250,8 @@ test('Mouse should block all event types when paused', async () => {
 test('Mouse.pause()/resume() should not make terminal mode changes', () => {
   // Arrange - Create stream with mocked methods to track terminal mode changes
   const stream = makeFakeTTYStream();
-  const writeSpy = mock(() => true);
-  const setRawModeSpy = mock(() => stream);
+  const writeSpy = vi.fn(() => true);
+  const setRawModeSpy = vi.fn(() => stream);
 
   const mockOutputStream = {
     write: writeSpy,
@@ -1273,8 +1286,8 @@ test('Mouse.pause()/resume() should not make terminal mode changes', () => {
 test('Mouse.pause()/resume() should not interfere with enable/disable', () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const writeSpy = mock(() => true);
-  const setRawModeSpy = mock(() => stream);
+  const writeSpy = vi.fn(() => true);
+  const setRawModeSpy = vi.fn(() => stream);
 
   const mockOutputStream = {
     write: writeSpy,
@@ -1339,7 +1352,7 @@ test('Mouse.eventsOf() should not yield events when paused', async () => {
     stream.emit('data', Buffer.from(pressEvent));
 
     // Give some time for event processing
-    await Bun.sleep(50);
+    await sleep(50);
 
     // Assert - the promise should still be pending (no event yielded)
     // We can verify this by checking if we can create a race that times out
@@ -1395,7 +1408,7 @@ test('Mouse.eventsOf() should queue and yield events after resume', async () => 
     stream.emit('data', Buffer.from('\x1b[<0;11;21M'));
     stream.emit('data', Buffer.from('\x1b[<0;12;22M'));
 
-    await Bun.sleep(50);
+    await sleep(50);
 
     // Act - resume the mouse
     mouse.resume();
@@ -1439,7 +1452,7 @@ test('Mouse.stream() should not yield events when paused', async () => {
     stream.emit('data', Buffer.from(pressEvent));
 
     // Give some time for event processing
-    await Bun.sleep(50);
+    await sleep(50);
 
     // Assert - the promise should still be pending (no event yielded)
     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100));
@@ -1496,7 +1509,7 @@ test('Mouse.stream() should not yield events of any type when paused', async () 
     stream.emit('data', Buffer.from('\x1b[<35;10;20M')); // move
 
     // Give some time for event processing
-    await Bun.sleep(50);
+    await sleep(50);
 
     // Assert - the promise should still be pending (no events yielded)
     const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100));
@@ -1551,7 +1564,7 @@ test('Mouse.eventsOf() with latestOnly should not update when paused', async () 
     stream.emit('data', Buffer.from('\x1b[<0;12;22M'));
     stream.emit('data', Buffer.from('\x1b[<0;13;23M'));
 
-    await Bun.sleep(50);
+    await sleep(50);
 
     // Act - resume the mouse
     mouse.resume();
@@ -1624,8 +1637,8 @@ test('Mouse.disable() then pause() should set paused state independently', () =>
 test('Mouse.resume() while disabled should not make terminal changes', () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const writeSpy = mock(() => true);
-  const setRawModeSpy = mock(() => stream);
+  const writeSpy = vi.fn(() => true);
+  const setRawModeSpy = vi.fn(() => stream);
 
   const mockOutputStream = {
     write: writeSpy,
@@ -1661,7 +1674,7 @@ test('Mouse.enable() while paused should preserve paused state', async () => {
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const pressEvent = '\x1b[<0;10;20M';
-  const pressSpy = mock(() => {});
+  const pressSpy = vi.fn(() => {});
 
   mouse.on('press', pressSpy);
 
@@ -1701,7 +1714,7 @@ test('Mouse should handle full cycle: pause → disable → enable → resume', 
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const pressEvent = '\x1b[<0;10;20M';
-  const pressSpy = mock(() => {});
+  const pressSpy = vi.fn(() => {});
 
   mouse.on('press', pressSpy);
 
@@ -1745,7 +1758,7 @@ test('Mouse should handle reverse cycle: disable → pause → enable → resume
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const pressEvent = '\x1b[<0;10;20M';
-  const pressSpy = mock(() => {});
+  const pressSpy = vi.fn(() => {});
 
   mouse.on('press', pressSpy);
 
@@ -1789,7 +1802,7 @@ test('Mouse should handle multiple pause/resume cycles with enable/disable', () 
   const stream = makeFakeTTYStream();
   const mouse = new Mouse(stream);
   const pressEvent = '\x1b[<0;10;20M';
-  const pressSpy = mock(() => {});
+  const pressSpy = vi.fn(() => {});
 
   mouse.on('press', pressSpy);
   mouse.enable();
@@ -1850,7 +1863,7 @@ test('Mouse eventsOf should handle pause → disable → enable → resume cycle
 
     // Emit event while still paused - should not be yielded
     stream.emit('data', Buffer.from('\x1b[<0;11;21M'));
-    await Bun.sleep(50);
+    await sleep(50);
 
     // Resume
     mouse.resume();
@@ -1960,7 +1973,7 @@ test('Mouse default threshold should not emit click when distance exceeds 1 cell
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;12;22m'; // xDiff=2, yDiff=2 (beyond threshold)
 
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   // Act
@@ -1983,7 +1996,7 @@ test('Mouse default threshold should not emit click when only X distance exceeds
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;12;20m'; // xDiff=2, yDiff=0 (X exceeds threshold)
 
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   // Act
@@ -2006,7 +2019,7 @@ test('Mouse default threshold should not emit click when only Y distance exceeds
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;10;22m'; // xDiff=0, yDiff=2 (Y exceeds threshold)
 
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   // Act
@@ -2060,7 +2073,7 @@ test('Mouse default threshold should maintain backward compatibility with hardco
   await click2Promise;
 
   // Test case 3: Distance > 1 (should not click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;50;60M')); // press at (50,60)
@@ -2093,7 +2106,7 @@ test('Mouse with threshold 0 should only emit click when press and release at ex
   await click1Promise;
 
   // Act & Assert - Test position with distance of 1 (should NOT click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;30;40M')); // press at (30,40)
@@ -2126,7 +2139,7 @@ test('Mouse with threshold 2 should emit click when distance is within 2 cells',
   await click1Promise;
 
   // Act & Assert - Test distance of 3 (should NOT click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;50;60M')); // press at (50,60)
@@ -2159,7 +2172,7 @@ test('Mouse with threshold 5 should emit click when distance is within 5 cells',
   await click1Promise;
 
   // Act & Assert - Test distance of 6 (should NOT click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;50;60M')); // press at (50,60)
@@ -2192,7 +2205,7 @@ test('Mouse with threshold 10 should emit click when distance is within 10 cells
   await click1Promise;
 
   // Act & Assert - Test distance of 11 (should NOT click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;50;60M')); // press at (50,60)
@@ -2227,7 +2240,7 @@ test('Mouse with threshold 0 should require exact same position - all edge cases
   await click1Promise;
 
   // Act & Assert - Test 2: X differs by 1, Y is same (should NOT click)
-  const clickSpy1 = mock(() => {});
+  const clickSpy1 = vi.fn(() => {});
   mouse.on('click', clickSpy1);
 
   stream.emit('data', Buffer.from('\x1b[<0;30;40M')); // press at (30,40)
@@ -2237,7 +2250,7 @@ test('Mouse with threshold 0 should require exact same position - all edge cases
   expect(clickSpy1).not.toHaveBeenCalled();
 
   // Act & Assert - Test 3: Y differs by 1, X is same (should NOT click)
-  const clickSpy2 = mock(() => {});
+  const clickSpy2 = vi.fn(() => {});
   mouse.on('click', clickSpy2);
 
   stream.emit('data', Buffer.from('\x1b[<0;50;60M')); // press at (50,60)
@@ -2247,7 +2260,7 @@ test('Mouse with threshold 0 should require exact same position - all edge cases
   expect(clickSpy2).not.toHaveBeenCalled();
 
   // Act & Assert - Test 4: Both X and Y differ by 1 (should NOT click)
-  const clickSpy3 = mock(() => {});
+  const clickSpy3 = vi.fn(() => {});
   mouse.on('click', clickSpy3);
 
   stream.emit('data', Buffer.from('\x1b[<0;70;80M')); // press at (70,80)
@@ -2257,7 +2270,7 @@ test('Mouse with threshold 0 should require exact same position - all edge cases
   expect(clickSpy3).not.toHaveBeenCalled();
 
   // Act & Assert - Test 5: X differs by more, Y is same (should NOT click)
-  const clickSpy4 = mock(() => {});
+  const clickSpy4 = vi.fn(() => {});
   mouse.on('click', clickSpy4);
 
   stream.emit('data', Buffer.from('\x1b[<0;90;100M')); // press at (90,100)
@@ -2267,7 +2280,7 @@ test('Mouse with threshold 0 should require exact same position - all edge cases
   expect(clickSpy4).not.toHaveBeenCalled();
 
   // Act & Assert - Test 6: Y differs by more, X is same (should NOT click)
-  const clickSpy5 = mock(() => {});
+  const clickSpy5 = vi.fn(() => {});
   mouse.on('click', clickSpy5);
 
   stream.emit('data', Buffer.from('\x1b[<0;110;120M')); // press at (110,120)
@@ -2314,7 +2327,7 @@ test('Mouse with threshold 50 should emit click when distance is within 50 cells
   await click1Promise;
 
   // Act & Assert - Test distance of 51 (should NOT click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;100;200M')); // press at (100,200)
@@ -2347,7 +2360,7 @@ test('Mouse with threshold 100 should emit click when distance is within 100 cel
   await click1Promise;
 
   // Act & Assert - Test distance of 101 (should NOT click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;200;300M')); // press at (200,300)
@@ -2380,7 +2393,7 @@ test('Mouse with threshold 500 should emit click when distance is within 500 cel
   await click1Promise;
 
   // Act & Assert - Test distance of 501 (should NOT click)
-  const clickSpy = mock(() => {});
+  const clickSpy = vi.fn(() => {});
   mouse.on('click', clickSpy);
 
   stream.emit('data', Buffer.from('\x1b[<0;1000;2000M')); // press at (1000,2000)
@@ -2406,8 +2419,8 @@ test('Mouse should handle garbage collection cleanup', async () => {
 
   // Arrange
   const stream = makeFakeTTYStream();
-  const attachSpy = mock(() => {});
-  const detachSpy = mock(() => {});
+  const attachSpy = vi.fn(() => {});
+  const detachSpy = vi.fn(() => {});
 
   // Track listener attachments
   const originalOn = stream.on.bind(stream);
@@ -2449,8 +2462,8 @@ test('Mouse should handle GC correctly when explicitly disabled before collectio
 
   // Arrange
   const stream = makeFakeTTYStream();
-  const attachSpy = mock(() => {});
-  const detachSpy = mock(() => {});
+  const attachSpy = vi.fn(() => {});
+  const detachSpy = vi.fn(() => {});
 
   const originalOn = stream.on.bind(stream);
   stream.on = ((event: string, listener: (...args: unknown[]) => void) => {
@@ -2508,8 +2521,8 @@ test('Mouse should handle multiple enable/disable cycles with FinalizationRegist
 
   // Arrange
   const stream = makeFakeTTYStream();
-  const attachSpy = mock(() => {});
-  const detachSpy = mock(() => {});
+  const attachSpy = vi.fn(() => {});
+  const detachSpy = vi.fn(() => {});
 
   const originalOn = stream.on.bind(stream);
   stream.on = ((event: string, listener: (...args: unknown[]) => void) => {
@@ -2571,8 +2584,8 @@ test('Multiple Mouse instances should be garbage collected independently', async
 
   // Arrange
   const stream = makeFakeTTYStream();
-  const attachSpy = mock(() => {});
-  const detachSpy = mock(() => {});
+  const attachSpy = vi.fn(() => {});
+  const detachSpy = vi.fn(() => {});
 
   const originalOn = stream.on.bind(stream);
   stream.on = ((event: string, listener: (...args: unknown[]) => void) => {
@@ -2630,8 +2643,8 @@ test('Mouse.destroy() should work correctly with FinalizationRegistry', async ()
 
   // Arrange
   const stream = makeFakeTTYStream();
-  const attachSpy = mock(() => {});
-  const detachSpy = mock(() => {});
+  const attachSpy = vi.fn(() => {});
+  const detachSpy = vi.fn(() => {});
 
   const originalOn = stream.on.bind(stream);
   stream.on = ((event: string, listener: (...args: unknown[]) => void) => {
@@ -2674,8 +2687,8 @@ test('Mouse.destroy() should be idempotent with FinalizationRegistry', async () 
 
   // Arrange
   const stream = makeFakeTTYStream();
-  const attachSpy = mock(() => {});
-  const detachSpy = mock(() => {});
+  const attachSpy = vi.fn(() => {});
+  const detachSpy = vi.fn(() => {});
 
   const originalOn = stream.on.bind(stream);
   stream.on = ((event: string, listener: (...args: unknown[]) => void) => {
@@ -2884,7 +2897,7 @@ describe('Mouse.waitForClick()', () => {
     await clickPromise;
 
     // Emit another click - should not be handled by waitForClick
-    const secondClickSpy = mock(() => {});
+    const secondClickSpy = vi.fn(() => {});
     mouse.on('click', secondClickSpy);
     stream.emit('data', Buffer.from(pressEvent));
     stream.emit('data', Buffer.from(releaseEvent));
@@ -3056,7 +3069,7 @@ describe('Mouse.waitForInput()', () => {
     await inputPromise;
 
     // Emit another event - should not be handled by waitForInput
-    const secondPressSpy = mock(() => {});
+    const secondPressSpy = vi.fn(() => {});
     mouse.on('press', secondPressSpy);
     stream.emit('data', Buffer.from(pressEvent));
 
@@ -3170,7 +3183,7 @@ describe('Mouse.getMousePosition()', () => {
     await positionPromise;
 
     // Emit another move - should not be handled by getMousePosition
-    const secondMoveSpy = mock(() => {});
+    const secondMoveSpy = vi.fn(() => {});
     mouse.on('move', secondMoveSpy);
     stream.emit('data', Buffer.from(moveEvent));
 
@@ -3483,7 +3496,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
       stream.emit('data', Buffer.from('\x1b[<35;10;20M'));
 
       // Abort before debounce completes
-      await Bun.sleep(20);
+      await sleep(20);
       controller.abort();
 
       // Assert - promise should be rejected due to abort

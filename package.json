@@ -6,10 +6,12 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "@biomejs/biome": "^2.3.11",
     "@changesets/cli": "^2.29.8",
-    "@types/bun": "latest",
+    "@types/node": "^22.10.1",
+    "@vitest/coverage-v8": "^4.0.16",
     "dprint": "^0.51.1",
     "lefthook": "^2.0.13",
-    "markdownlint-cli2": "^0.20.0"
+    "markdownlint-cli2": "^0.20.0",
+    "vitest": "^4.0.16"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
@@ -22,15 +24,13 @@
     "format:biome": "biome check --write --unsafe",
     "format:dprint": "dprint fmt",
     "format:markdown": "markdownlint-cli2 \"**/*.md\" --fix",
-    "format": "bun run format:biome && bun run format:dprint && bun run format:markdown",
+    "format": "pnpm run format:biome && pnpm run format:dprint && pnpm run format:markdown",
     "check": "biome check",
     "lint:markdown": "markdownlint-cli2 \"**/*.md\"",
-    "build": "bun run --filter \"*\" build",
-    "test": "bun run --filter \"*\" test",
-    "test:coverage": "bun run --filter \"*\" test --coverage",
-    "test:coverage:lcov": "bun run --filter \"*\" test --coverage --coverage-reporter=lcov",
-    "test:coverage:reporters": "bun run --filter \"*\" test --coverage --coverage-reporter=text --coverage-reporter=lcov",
-    "ci:version": "changeset version && bun update",
-    "ci:publish": "for dir in packages/*; do (cd \"$dir\" && npm publish --provenance || true); done && changeset tag"
+    "build": "pnpm -r --filter './packages/*' build",
+    "test": "pnpm -r --filter './packages/*' test",
+    "test:coverage": "vitest --coverage --reporter=verbose",
+    "test:coverage:lcov": "vitest --coverage --coverage-reporter=lcov",
+    "test:coverage:reporters": "vitest --coverage --coverage-reporter=text --coverage-reporter=lcov"
   }
 }

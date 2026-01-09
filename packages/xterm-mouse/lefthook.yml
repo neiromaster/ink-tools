@@ -13,4 +13,4 @@ pre-commit:
       run: npx markdownlint-cli2 --fix {staged_files}
       stage_fixed: true
     typecheck:
-      run: bun run typecheck
+      run: pnpm run typecheck

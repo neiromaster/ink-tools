@@ -21,13 +21,11 @@ interfaces.
 ## Installation
 
 ```bash
-bun add @ink-tools/ink-mouse
+pnpm add @ink-tools/ink-mouse
 # or
 npm install @ink-tools/ink-mouse
 # or
 yarn add @ink-tools/ink-mouse
-# or
-pnpm add @ink-tools/ink-mouse
 ```
 
 ## Peer Dependencies
@@ -610,17 +608,17 @@ This package has comprehensive test coverage to ensure reliability and prevent r
 
 ```bash
 # Run all tests in the monorepo
-bun test
+pnpm test
 
 # Run tests with coverage report
-bun run test:coverage
+pnpm run test:coverage
 
 # Generate LCOV coverage reports for CI/CD
-bun run test:coverage:lcov
+pnpm run test:coverage:lcov
 
 # Run tests from the ink-mouse package directory
 cd packages/ink-mouse
-bun test
+pnpm test
 ```
 
 ### Test Coverage
@@ -679,7 +677,7 @@ const childElement = createMockDOMElementChain([
 
 ```typescript
 import { render } from 'ink-testing-library';
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import React from 'react';
 import { Box, Text } from 'ink';
 import { MouseProvider, useOnClick } from '@ink-tools/ink-mouse';

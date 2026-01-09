@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'bun:test';
 import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
+import { describe, expect, test } from 'vitest';
 import { MouseProvider } from '../provider';
 import { useMouse } from './useMouse';
 

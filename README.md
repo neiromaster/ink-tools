@@ -10,7 +10,7 @@ Monorepo for Ink-based TUI (Terminal User Interface) components and utilities.
 ## Installation
 
 ```bash
-bun install
+pnpm install
 ```
 
 ## Development
@@ -19,34 +19,34 @@ bun install
 
 ```bash
 # Run all tests across all packages
-bun test
+pnpm test
 
 # Run tests for a specific package
-cd packages/ink-mouse && bun test
-cd packages/xterm-mouse && bun test
+cd packages/ink-mouse && pnpm test
+cd packages/xterm-mouse && pnpm test
 ```
 
 ### Building
 
 ```bash
 # Build all packages
-bun run build
+pnpm run build
 
 # Build specific package (from package directory)
-cd packages/xterm-mouse && bun run build
+cd packages/xterm-mouse && pnpm run build
 ```
 
 ### Code Quality
 
 ```bash
 # Type checking
-bunx tsc --noEmit
+pnpm run typecheck
 
 # Format all code
-bun run format
+pnpm run format
 
 # Check code without auto-fixing
-bun run check
+pnpm run check
 ```
 
 ## Publishing

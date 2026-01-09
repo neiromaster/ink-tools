@@ -12,27 +12,27 @@ React components and hooks for handling mouse events in terminal environments.
 ### Installation
 
 ```bash
-bun install
+pnpm install
 ```
 
 ### Building
 
 ```bash
-bun run build
+pnpm run build
 ```
 
 ### Development Mode
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 ## Testing
 
-Use `bun test` to run tests.
+Use **Vitest** to run tests.
 
 ```ts
-import { test, expect } from "bun:test";
+import { test, expect } from "vitest";
 
 test("description", () => {
   expect(value).toBe(expected);

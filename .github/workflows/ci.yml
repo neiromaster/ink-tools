@@ -18,30 +18,36 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v6
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          bun-version: latest
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Type check
-        run: bun run typecheck
+        run: pnpm run typecheck
 
       - name: Lint check
-        run: bun run check
+        run: pnpm run check
 
       - name: Run tests
-        run: bun test
+        run: pnpm test
 
       - name: Generate coverage report
-        run: bun run test:coverage:lcov
+        run: pnpm run test:coverage:lcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./packages/ink-mouse/coverage/lcov.info
-          flags: ink-mouse
-          name: ink-mouse-coverage
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
           fail_ci_if_error: false

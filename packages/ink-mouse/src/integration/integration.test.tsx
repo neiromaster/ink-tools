@@ -1,7 +1,7 @@
-import { describe, expect, test } from 'bun:test';
 import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
 import { useRef } from 'react';
+import { describe, expect, test } from 'vitest';
 import type { MouseEvent } from 'xterm-mouse';
 import { createMockDOMElement } from '../../test/mocks/ink-element';
 import { useOnDrag, useOnMouseEnter, useOnMouseLeave, useOnPress, useOnRelease } from '../hooks';

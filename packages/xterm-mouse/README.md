@@ -84,7 +84,7 @@ if (result === Mouse.SupportCheckResult.Supported) {
 ### Installation
 
 ```bash
-bun add xterm-mouse
+pnpm add xterm-mouse
 # or
 npm install xterm-mouse
 # or
@@ -129,7 +129,7 @@ The library includes several interactive examples demonstrating real-world termi
 Demonstrates clickable buttons with visual feedback, hover effects, and click animations:
 
 ```bash
-bun run dev:interactive-buttons
+pnpm run dev:interactive-buttons
 ```
 
 Features:
@@ -144,7 +144,7 @@ Features:
 Shows a menu with hover effects, selection highlighting, and keyboard navigation:
 
 ```bash
-bun run dev:interactive-menu
+pnpm run dev:interactive-menu
 ```
 
 Features:
@@ -159,7 +159,7 @@ Features:
 Demonstrates a clickable grid with drag-to-paint functionality:
 
 ```bash
-bun run dev:interactive-grid
+pnpm run dev:interactive-grid
 ```
 
 Features:
@@ -679,24 +679,24 @@ This library is currently in its early stages of development. While efforts are 
 
 **Development:**
 
-* **`bun run build`**: Compiles the TypeScript code into JavaScript and generates type declaration files.
-* **`bun run typecheck`**: Type checks the code without emitting output.
-* **`bun run test`**: Runs all tests.
-* **`bun run coverage`**: Runs tests with coverage report.
+* **`pnpm run build`**: Compiles the TypeScript code into JavaScript and generates type declaration files.
+* **`pnpm run typecheck`**: Type checks the code without emitting output.
+* **`pnpm run test`**: Runs all tests.
+* **`pnpm run coverage`**: Runs tests with coverage report.
 
 **Code Quality:**
 
-* **`bun run lint`**: Runs Biome, dprint, and markdownlint checks.
-* **`bun run lint:md`**: Runs markdownlint checks only.
-* **`bun run format`**: Formats code using Biome, dprint, and markdownlint.
-* **`bun run format:md`**: Formats markdown files using markdownlint.
+* **`pnpm run lint`**: Runs Biome, dprint, and markdownlint checks.
+* **`pnpm run lint:md`**: Runs markdownlint checks only.
+* **`pnpm run format`**: Formats code using Biome, dprint, and markdownlint.
+* **`pnpm run format:md`**: Formats markdown files using markdownlint.
 
 **Examples:**
 
-* **`bun run dev:basic`**: Runs the basic example with hot-reloading.
-* **`bun run dev:streaming`**: Runs the streaming example with hot-reloading.
-* **`bun run dev:custom-threshold`**: Runs the custom threshold example with hot-reloading.
-* **`bun run dev:pause-resume`**: Runs the pause/resume example with hot-reloading.
-* **`bun run dev:interactive-buttons`**: Runs the interactive buttons demo.
-* **`bun run dev:interactive-menu`**: Runs the interactive menu demo.
-* **`bun run dev:interactive-grid`**: Runs the interactive grid demo.
+* **`pnpm run dev:basic`**: Runs the basic example with hot-reloading.
+* **`pnpm run dev:streaming`**: Runs the streaming example with hot-reloading.
+* **`pnpm run dev:custom-threshold`**: Runs the custom threshold example with hot-reloading.
+* **`pnpm run dev:pause-resume`**: Runs the pause/resume example with hot-reloading.
+* **`pnpm run dev:interactive-buttons`**: Runs the interactive buttons demo.
+* **`pnpm run dev:interactive-menu`**: Runs the interactive menu demo.
+* **`pnpm run dev:interactive-grid`**: Runs the interactive grid demo.

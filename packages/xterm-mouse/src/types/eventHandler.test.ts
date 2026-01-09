@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { Mouse } from '../core/Mouse';
 import type { EventByAction, EventTypeFor, ListenerFor, TypedEventListener } from './eventHandler';
 

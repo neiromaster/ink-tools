@@ -19,29 +19,29 @@ This is a TypeScript library for capturing and parsing mouse events from xterm-c
 ### Building
 
 ```bash
-bun run build          # Build using tsup (bundles ESM output to dist/)
+pnpm run build          # Build using tsup (bundles ESM output to dist/)
 ```
 
 ### Testing
 
 ```bash
-bun test               # Run all tests
-bun run coverage       # Run tests with coverage report
+pnpm test               # Run all tests
+pnpm run coverage       # Run tests with coverage report
 ```
 
 ### Code Quality
 
 ```bash
-bun run lint           # Check code with Biome and dprint
-bun run format         # Format code with Biome and dprint
-bun run typecheck      # Type check with TypeScript
+pnpm run lint           # Check code with Biome and dprint
+pnpm run format         # Format code with Biome and dprint
+pnpm run typecheck      # Type check with TypeScript
 ```
 
 ### Development
 
 ```bash
-bun run dev:basic         # Run basic example with hot-reload
-bun run dev:streaming     # Run streaming example with hot-reload
+pnpm run dev:basic         # Run basic example with hot-reload
+pnpm run dev:streaming     # Run streaming example with hot-reload
 ```
 
 ## Architecture Details
@@ -173,16 +173,15 @@ src/
 
 ## Testing Approach
 
-- Uses `bun test` for all testing
+- Uses **Vitest** for all testing
 - Tests are co-located with source files (`.test.ts` suffix)
 - The `Mouse` class requires a TTY for integration tests - unit tests mock stdin/stdout
 - Run examples in a real terminal to verify mouse tracking behavior
 
 ## Development Notes
 
-- **Bun is the default runtime** (not Node.js)
-- Use `bun <file>` instead of `node <file>`
-- Use `bun test` instead of `jest` or `vitest`
+- Use **pnpm** as the package manager
+- Use `pnpm test` to run tests (Vitest)
 - The library is ESM-only (`"type": "module"` in package.json)
 - Terminal mouse tracking **requires a TTY** - won't work in piped/non-interactive environments
 - **Check support before enabling**: Use `Mouse.isSupported()` or `Mouse.checkSupport()` to verify terminal capabilities before calling `mouse.enable()`
