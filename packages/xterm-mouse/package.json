@@ -1,6 +1,6 @@
 {
   "name": "xterm-mouse",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "license": "MIT",
   "description": "A library for working with the mouse in the terminal.",
   "type": "module",

@@ -1,5 +1,16 @@
 # @ink-tools/xterm-mouse
 
+## 0.7.5
+
+### Patch Changes
+
+- f57be37: Republish packages after pnpm migration improvements.
+
+  - Fix xterm-mouse dual-package ESM/CJS support
+  - Add CJS build output to tsup config
+  - Update package.json exports with require condition
+  - Add proper type definitions for CJS (.d.cts)
+
 ## 0.7.4
 
 ### Patch Changes
