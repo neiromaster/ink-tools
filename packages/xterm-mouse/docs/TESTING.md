@@ -350,7 +350,7 @@ test('Mouse.eventsOf() should be cancellable with AbortSignal', async () => {
 Run coverage report:
 
 ```bash
-bun test --coverage
+pnpm run test:coverage
 ```
 
 Coverage is tracked in the build progress. Aim for high coverage on critical paths like:

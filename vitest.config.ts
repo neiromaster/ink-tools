@@ -1,6 +1,7 @@
-import { defineConfig } from 'vitest/config';
+import { mergeConfig } from 'vitest/config';
+import baseConfig from './vitest.config.base';
 
-export default defineConfig({
+export default mergeConfig(baseConfig, {
   test: {
     // Coverage configuration (migrated from bunfig.toml)
     coverage: {
@@ -45,12 +46,5 @@ export default defineConfig({
       // Per-package coverage reports
       reportsDirectory: './coverage',
     },
-
-    // Test configuration (migrated from bunfig.toml)
-    testTimeout: 5000,
-    globals: false, // We use explicit imports, not globals
-
-    // Environment
-    environment: 'node',
   },
 });

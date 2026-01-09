@@ -17,7 +17,7 @@ This guide helps contributors write effective tests for the `@ink-tools/ink-mous
 
 The test suite uses:
 
-- **Bun Test** - Fast built-in test runner
+- **Vitest** - Fast test runner with native TypeScript support
 - **ink-testing-library** - Render and test Ink components
 - **Custom mocks** - Mock Ink's internal structures (DOMElement, yogaNode)
 
@@ -55,16 +55,16 @@ packages/ink-mouse/
 
 ```bash
 # Run all tests in monorepo
-bun test
+pnpm test
 
 # Run with coverage
-bun run test:coverage
+pnpm run test:coverage
 
 # Run specific test file
-bun test packages/ink-mouse/src/utils/geometry.test.ts
+pnpm test src/utils/geometry.test.ts
 
 # Watch mode
-bun test --watch
+pnpm run test:watch
 ```
 
 ### Monorepo Testing
@@ -73,13 +73,13 @@ The root `package.json` provides centralized commands:
 
 ```bash
 # Run all tests across all packages
-bun run test
+pnpm test
 
 # Run all tests with coverage
-bun run test:coverage
+pnpm run test:coverage
 
 # Generate LCOV reports for CI/CD
-bun run test:coverage:lcov
+pnpm run test:coverage:lcov
 ```
 
 ## Writing Tests
@@ -87,7 +87,7 @@ bun run test:coverage:lcov
 ### Basic Test Structure
 
 ```typescript
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 
 describe('FunctionName', () => {
   test('does something specific', () => {
@@ -112,7 +112,7 @@ describe('FunctionName', () => {
 // src/hooks.test.ts  ❌ WRONG
 
 import { render } from 'ink-testing-library';
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import React from 'react';
 import { Box, Text } from 'ink';
 
@@ -519,8 +519,8 @@ const text = `Value: ${value}`;
 **Solution**: Clean coverage directories:
 
 ```bash
-rm -rf packages/ink-mouse/coverage
-bun run test:coverage
+rm -rf coverage
+pnpm run test:coverage
 ```
 
 ### Tests Pass But Coverage Low
@@ -530,7 +530,7 @@ bun run test:coverage
 **Solution**: Run coverage with detailed output:
 
 ```bash
-bun test --coverage --coverage-reporter=text
+pnpm run test:coverage
 ```
 
 Look for lines marked with `-` (not covered) in the output.
@@ -549,17 +549,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - run: bun run test:coverage:lcov
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm run test:coverage:lcov
       - uses: codecov/codecov-action@v3
         with:
-          files: ./packages/ink-mouse/coverage/lcov.info
+          files: ./coverage/lcov.info
 ```
 
 ## Additional Resources
 
-- [Bun Test Documentation](https://bun.sh/docs/test)
+- [Vitest Documentation](https://vitest.dev/)
 - [Ink Documentation](https://github.com/vadimdemedes/ink)
 - [React Testing Library Principles](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
 - [Project Documentation](../../docs/solutions/testing/)

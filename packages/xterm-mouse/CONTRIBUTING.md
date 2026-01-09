@@ -6,7 +6,8 @@ Thank you for your interest in contributing to xterm-mouse! This document provid
 
 ### Prerequisites
 
-* **Bun**: This project uses Bun as its runtime and package manager. Install it from [bun.sh](https://bun.sh/).
+* **Node.js**: This project requires Node.js 20 or later.
+* **pnpm**: This project uses pnpm as its package manager. Install it from [pnpm.io](https://pnpm.io/).
 * **Git**: For version control.
 
 ### Cloning the Repository
@@ -19,13 +20,13 @@ cd xterm-mouse
 ### Installing Dependencies
 
 ```bash
-bun install
+pnpm install
 ```
 
 ### Building the Project
 
 ```bash
-bun run build
+pnpm run build
 ```
 
 This compiles the TypeScript code into the `dist/` directory and generates type declaration files.
@@ -61,10 +62,10 @@ The project includes examples that demonstrate the library's usage:
 
 ```bash
 # Run the basic example with hot-reloading
-bun run dev:basic
+pnpm run dev:basic
 
 # Run the streaming example with hot-reloading
-bun run dev:streaming
+pnpm run dev:streaming
 ```
 
 > [!NOTE]
@@ -74,16 +75,16 @@ bun run dev:streaming
 
 ```bash
 # Run all tests
-bun test
+pnpm test
 
 # Run tests with coverage
-bun run coverage
+pnpm run test:coverage
 ```
 
 ### Type Checking
 
 ```bash
-bun run typecheck
+pnpm run typecheck
 ```
 
 This runs TypeScript compiler to check for type errors without emitting files.
@@ -98,20 +99,20 @@ This project uses:
 ### Checking Code Style
 
 ```bash
-bun run lint
+pnpm run check
 ```
 
 ### Formatting Code
 
 ```bash
-bun run format
+pnpm run format
 ```
 
 This automatically formats your code according to the project's style guide.
 
 ### Pre-commit Hooks
 
-The project uses lefthook to run pre-commit checks. These are automatically installed when you run `bun install`. The hooks ensure that:
+The project uses lefthook to run pre-commit checks. These are automatically installed when you run `pnpm install`. The hooks ensure that:
 
 * Code is properly formatted
 * Linting passes
@@ -161,9 +162,9 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 3. **Test your changes**:
 
     ```bash
-    bun test
-    bun run typecheck
-    bun run lint
+    pnpm test
+    pnpm run typecheck
+    pnpm run check
     ```
 
 4. **Update documentation** if your changes affect the API or usage.
@@ -192,7 +193,7 @@ src/parser/ansiParser.ts   →  src/parser/ansiParser.test.ts
 ### Test Structure
 
 ```typescript
-import { test, expect } from "bun:test";
+import { test, expect } from "vitest";
 
 test("descriptive test name", () => {
   // Arrange

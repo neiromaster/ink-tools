@@ -388,16 +388,25 @@ class InteractiveMenuDemo {
 
       if (key.name === 'up') {
         this.selectedIndex = (this.selectedIndex - 1 + this.menuItems.length) % this.menuItems.length;
-        this.selectItem(this.menuItems[this.selectedIndex]!);
+        const selectedItem = this.menuItems[this.selectedIndex];
+        if (selectedItem) {
+          this.selectItem(selectedItem);
+        }
       }
 
       if (key.name === 'down') {
         this.selectedIndex = (this.selectedIndex + 1) % this.menuItems.length;
-        this.selectItem(this.menuItems[this.selectedIndex]!);
+        const selectedItem = this.menuItems[this.selectedIndex];
+        if (selectedItem) {
+          this.selectItem(selectedItem);
+        }
       }
 
       if (key.name === 'return' && this.selectedIndex >= 0) {
-        this.selectItem(this.menuItems[this.selectedIndex]!);
+        const selectedItem = this.menuItems[this.selectedIndex];
+        if (selectedItem) {
+          this.selectItem(selectedItem);
+        }
       }
     });
   }
