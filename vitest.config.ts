@@ -2,6 +2,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    // Include test files from packages
+    include: ['packages/*/src/**/*.test.ts', 'packages/*/src/**/*.test.tsx'],
+
     // Coverage configuration (migrated from bunfig.toml)
     coverage: {
       provider: 'v8',

@@ -33,7 +33,7 @@
     "build": "pnpm -r --filter './packages/*' build",
     "test": "pnpm -r --filter './packages/*' test",
     "test:coverage": "vitest --coverage --reporter=verbose",
-    "test:coverage:lcov": "vitest --coverage --coverage-reporter=lcov",
-    "test:coverage:reporters": "vitest --coverage --coverage-reporter=text --coverage-reporter=lcov"
+    "test:coverage:lcov": "vitest --coverage --coverage.reporter=lcov",
+    "test:coverage:reporters": "vitest --coverage --coverage.reporter=text --coverage.reporter=lcov"
   }
 }
