@@ -10,7 +10,35 @@ permissions:
   contents: read
 
 jobs:
+  validate-vitest-configs:
+    name: Validate Vitest Configurations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Verify vitest configs exist
+        run: pnpm verify:configs
+
+      - name: Detect vitest configuration issues
+        run: pnpm verify:tests
+
   test:
+    needs: validate-vitest-configs
     name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:

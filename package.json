@@ -30,6 +30,8 @@
     "format": "pnpm run format:biome && pnpm run format:dprint && pnpm run format:markdown",
     "check": "biome check",
     "lint:markdown": "markdownlint-cli2 \"**/*.md\"",
+    "verify:configs": "node scripts/verify-vitest-configs.js",
+    "verify:tests": "scripts/detect-vitest-issues.sh",
     "build": "pnpm -r --filter './packages/*' build",
     "test": "pnpm -r --filter './packages/*' test",
     "test:coverage": "vitest --coverage --coverage.reporter=text",
