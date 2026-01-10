@@ -149,7 +149,7 @@ This eliminates the boilerplate of manually calling `off()` after handling one-t
 
 ## Code Organization
 
-```
+```text
 src/
 ├── index.ts           # Public API exports
 ├── core/

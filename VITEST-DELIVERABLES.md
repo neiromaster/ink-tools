@@ -271,7 +271,7 @@ export default mergeConfig(baseConfig, {
 
 #### Three-Tier Pattern
 
-```
+```text
 repository/
 ├── vitest.config.base.ts      # Shared: resolution, environment
 ├── vitest.config.ts           # Root: coverage, CI reporters

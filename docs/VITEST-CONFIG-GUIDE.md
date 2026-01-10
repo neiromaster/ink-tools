@@ -224,7 +224,7 @@ Add a dedicated validation step:
 
 Create a `templates/package/` directory with these files:
 
-```
+```text
 templates/package/
 ├── package.json.template
 ├── vitest.config.ts
@@ -273,7 +273,7 @@ export default mergeConfig(baseConfig, {
 
 #### Three-Tier Configuration Pattern
 
-```
+```text
 repository/
 ├── vitest.config.base.ts      # Shared base configuration
 ├── vitest.config.ts           # Root-specific configuration
@@ -703,7 +703,7 @@ echo "All checks passed!"
 
 #### Module Resolution Errors
 
-```
+```text
 Error: Cannot find module 'xterm-mouse'
 Require stack:
 - /path/to/packages/ink-mouse/src/index.test.ts
@@ -715,7 +715,7 @@ Require stack:
 
 #### Export Errors
 
-```
+```text
 Error: No known conditions for "./dist/index.js" in "xterm-mouse" package
 ```
 
@@ -725,7 +725,7 @@ Error: No known conditions for "./dist/index.js" in "xterm-mouse" package
 
 #### Workspace Dependency Errors
 
-```
+```text
 Error: Cannot find package 'workspace:*' imported from ...
 ```
 
@@ -735,7 +735,7 @@ Error: Cannot find package 'workspace:*' imported from ...
 
 #### Type Errors in Tests
 
-```
+```text
 TS2307: Cannot find module 'xterm-mouse' or its corresponding type declarations
 ```
 
@@ -745,7 +745,7 @@ TS2307: Cannot find module 'xterm-mouse' or its corresponding type declarations
 
 #### Build Artifact Resolution
 
-```
+```text
 Error: Cannot find module './src/index' (imported by ...)
 ```
 
@@ -998,7 +998,7 @@ Create or update `vitest.config.ts` in each package to extend base config.
 
 **Symptoms**:
 
-```
+```text
 Error: Cannot find module 'workspace-dep'
 ```
 
@@ -1022,7 +1022,7 @@ cat packages/workspace-dep/package.json | grep -A 10 '"exports"'
 
 **Symptoms**:
 
-```
+```text
 TS2307: Cannot find module 'xterm-mouse' or its corresponding type declarations
 ```
 

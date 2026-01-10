@@ -17,7 +17,7 @@
 
 xterm-mouse uses **Vitest** for all testing. Tests are located alongside the source files they test, following the co-location pattern with `.test.ts` suffix.
 
-```
+```text
 src/
 ├── core/
 │   ├── Mouse.ts

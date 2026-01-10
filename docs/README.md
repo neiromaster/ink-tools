@@ -160,7 +160,7 @@ pnpm run build
 
 ### File Locations
 
-```
+```text
 docs/
 ├── README.md (this file)
 ├── VITEST-IMPLEMENTATION-SUMMARY.md

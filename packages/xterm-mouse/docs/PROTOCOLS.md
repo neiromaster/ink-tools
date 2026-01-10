@@ -55,7 +55,7 @@ The SGR (Select Graphic Rendition) style protocol is the modern standard for mou
 
 ### SGR Format
 
-```
+```text
 ESC [ < b ; x ; y M
 ```
 
@@ -69,7 +69,7 @@ Where:
 
 ### SGR Byte Sequence
 
-```
+```text
 0x1b 0x5b 0x3c [button bytes] 0x3b [x bytes] 0x3b [y bytes] 0x4d/0x6d
 ```
 
@@ -151,7 +151,7 @@ The ESC protocol is the original xterm mouse tracking format. It uses a compact 
 
 ### ESC Format
 
-```
+```text
 ESC [ M b x y
 ```
 
@@ -159,7 +159,7 @@ Where `b`, `x`, and `y` are **single bytes** encoded as `value + 32`.
 
 ### ESC Byte Sequence
 
-```
+```text
 0x1b 0x5b 0x4d [b+32] [x+32] [y+32]
 ```
 

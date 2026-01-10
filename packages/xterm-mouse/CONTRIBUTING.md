@@ -33,7 +33,7 @@ This compiles the TypeScript code into the `dist/` directory and generates type 
 
 ## Project Structure
 
-```
+```text
 xterm-mouse/
 ├── src/
 │   ├── core/
@@ -136,7 +136,7 @@ Use descriptive branch names:
 
 Write clear, descriptive commit messages:
 
-```
+```text
 feat: add support for horizontal wheel scrolling
 
 fix: correct coordinate calculation in SGR mode
@@ -185,7 +185,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 
 Tests should be placed alongside the source files they test with a `.test.ts` suffix:
 
-```
+```text
 src/core/Mouse.ts          →  src/core/Mouse.test.ts
 src/parser/ansiParser.ts   →  src/parser/ansiParser.test.ts
 ```

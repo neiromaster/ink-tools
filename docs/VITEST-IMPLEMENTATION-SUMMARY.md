@@ -18,7 +18,7 @@ Vitest doesn't automatically inherit root configuration when running packages re
 
 ### Three-Tier Configuration Pattern
 
-```
+```text
 repository/
 ├── vitest.config.base.ts      # Shared base (resolution conditions)
 ├── vitest.config.ts           # Root-specific (coverage settings)
@@ -168,7 +168,7 @@ pnpm --filter '@ink-tools/ink-mouse' test
 
 ### Expected Output
 
-```
+```text
 ✅ All vitest configs are valid!
 ✅ All checks passed!
 ✓ All packages have vitest.config.ts
