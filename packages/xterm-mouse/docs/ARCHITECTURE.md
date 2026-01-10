@@ -19,7 +19,7 @@
 
 The xterm-mouse library is structured as a layered architecture that handles terminal mouse events from raw ANSI escape sequences to high-level JavaScript event objects.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      Application Layer                      │
 │                 (User Code / Examples)                      │
@@ -201,7 +201,7 @@ type EventTypeFor<T extends MouseEventAction | 'error'> =
 
 ### Event Processing Pipeline
 
-```
+```text
 Terminal User Action
        │
        ▼
@@ -725,7 +725,7 @@ The `enable()` method saves original stream settings (`previousEncoding`, `previ
 
 ## Module Structure
 
-```
+```text
 src/
 ├── index.ts              # Public API exports
 ├── core/
@@ -757,7 +757,7 @@ src/
 
 The `dist/` directory contains the compiled output:
 
-```
+```text
 dist/
 ├── index.js         # ESM JavaScript output
 ├── index.d.ts       # TypeScript declarations
