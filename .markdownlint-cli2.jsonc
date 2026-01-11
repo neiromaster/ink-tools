@@ -17,6 +17,8 @@
     "node_modules/**",
     ".changeset/**",
     "packages/*/node_modules/**",
-    "plans/**"
+    "plans/**",
+    "CLAUDE.md",
+    "packages/*/CLAUDE.md"
   ]
 }
