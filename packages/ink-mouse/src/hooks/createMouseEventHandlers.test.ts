@@ -257,6 +257,35 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       // Assert - already hovering, should not fire again
       expect(enterHandler).not.toHaveBeenCalled();
     });
+
+    test('does NOT fire mouseEnter when mouse leaves element', () => {
+      // Arrange
+      const enterHandler = vi.fn();
+      mockHandlersRef.clear();
+      mockHandlersRef.set('enter1', { type: 'mouseEnter', ref: mockElement1, handler: enterHandler });
+
+      const mockState = {
+        isHovering: true,
+        bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
+      };
+      mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
+        if (ref === mockElement1) {
+          return mockState;
+        }
+        return { isHovering: false };
+      });
+      mockHoverStateRef.set(mockElement1, mockState);
+
+      const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 200, y: 200 } as MockMouseEvent;
+
+      // Act
+      handleMove(mockEvent);
+
+      // Assert - mouse left element, isHovering updated but handler NOT called
+      expect(enterHandler).not.toHaveBeenCalled();
+      expect(mockState.isHovering).toBe(false);
+    });
   });
 
   describe('Move Handler - mouseLeave Events', () => {
@@ -315,6 +344,63 @@ describe('createMouseEventHandlers - AAA Tests', () => {
 
       // Assert - not hovering, should not fire leave
       expect(leaveHandler).not.toHaveBeenCalled();
+    });
+
+    test('does NOT fire mouseLeave when mouse enters element', () => {
+      // Arrange
+      const leaveHandler = vi.fn();
+      mockHandlersRef.clear();
+      mockHandlersRef.set('leave1', { type: 'mouseLeave', ref: mockElement1, handler: leaveHandler });
+
+      const mockState = {
+        isHovering: false,
+        bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
+      };
+      mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
+        if (ref === mockElement1) {
+          return mockState;
+        }
+        return { isHovering: false };
+      });
+      mockHoverStateRef.set(mockElement1, mockState);
+
+      const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleMove(mockEvent);
+
+      // Assert - mouse entered element, isHovering updated but handler NOT called
+      expect(leaveHandler).not.toHaveBeenCalled();
+      expect(mockState.isHovering).toBe(true);
+    });
+
+    test('ignores click handlers when handleMove is called', () => {
+      // Arrange
+      const clickHandler = vi.fn();
+      mockHandlersRef.clear();
+      mockHandlersRef.set('click1', { type: 'click', ref: mockElement1, handler: clickHandler });
+
+      const mockState = {
+        isHovering: false,
+        bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
+      };
+      mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
+        if (ref === mockElement1) {
+          return mockState;
+        }
+        return { isHovering: false };
+      });
+      mockHoverStateRef.set(mockElement1, mockState);
+
+      const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleMove(mockEvent);
+
+      // Assert - click handler should NOT be called by handleMove (switch default case)
+      expect(clickHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -406,6 +492,45 @@ describe('createMouseEventHandlers - AAA Tests', () => {
 
       // Act & Assert - should not throw
       expect(() => handleClick(mockEvent)).not.toThrow();
+    });
+
+    test('ignores handlers with non-matching types', () => {
+      // Arrange
+      mockHandlersRef.clear();
+      mockHandlersRef.set('wheelHandler', { type: 'wheel', ref: mockElement1, handler: mockClickHandler1 });
+      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleClick(mockEvent);
+
+      // Assert - wheel handler should NOT be called for click event
+      expect(mockClickHandler1).not.toHaveBeenCalled();
+    });
+
+    test('handleMove ignores mouseMove handlers with null bounds', () => {
+      // Arrange
+      const moveHandler = vi.fn();
+      mockHandlersRef.clear();
+      mockHandlersRef.set('move1', { type: 'mouseMove', ref: mockElement1, handler: moveHandler });
+
+      // Mock get cached state to return null bounds for handleMove
+      mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
+        if (ref === mockElement1) {
+          return { isHovering: false };
+        }
+        return { isHovering: false };
+      });
+      mockHoverStateRef.set(mockElement1, { isHovering: false });
+
+      const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleMove(mockEvent);
+
+      // Assert - handler should NOT be called when bounds are null
+      expect(moveHandler).not.toHaveBeenCalled();
     });
   });
 });
