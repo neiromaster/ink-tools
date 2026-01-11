@@ -18,7 +18,7 @@ When running tests via `pnpm -r test` in pnpm workspace monorepos, Vitest fails 
 
 Created comprehensive documentation at `/Users/gavro/projects/neiropacks/ink-tools/docs/`:
 
-#### VITEST-CONFIG-GUIDE.md (26 KB, 6000+ words)
+#### VITEST-CONFIG-GUIDE.md (26 KB, 3000+ words)
 
 The complete reference guide covering:
 
