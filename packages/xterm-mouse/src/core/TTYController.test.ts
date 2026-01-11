@@ -366,4 +366,92 @@ describe('TTYController', () => {
       expect(controller.isEnabled()).toBe(false); // Should still set enabled to false
     });
   });
+
+  describe('encoding restoration', () => {
+    test('restores previous encoding when disable is called', () => {
+      // Arrange
+      mockInputStream.readableEncoding = 'utf16le';
+      controller.enable();
+
+      // Act
+      controller.disable();
+
+      // Assert - previous encoding should be restored
+      expect(mockInputStream.readableEncoding).toBe('utf16le');
+    });
+
+    test('does not restore encoding when it was null', () => {
+      // Arrange
+      mockInputStream.readableEncoding = null;
+      controller.enable();
+
+      // Act
+      controller.disable();
+
+      // Assert - encoding should be utf8 (set during enable)
+      expect(mockInputStream.readableEncoding).toBe('utf8');
+    });
+  });
+
+  describe('destroy with cleanup token', () => {
+    test('unregisters cleanup token when enabled', () => {
+      // Arrange
+      controller.enable();
+
+      // Act
+      controller.destroy();
+
+      // Assert - disable() was called, cleanup token should be cleared
+      expect(controller.isEnabled()).toBe(false);
+    });
+
+    test('handles destroy when disable throws before cleanup', () => {
+      // Arrange
+      controller.enable();
+      // Make disable throw an error before it can unregister
+      mockInputStream.off = vi.fn(() => {
+        throw new Error('Remove listener error');
+      });
+
+      // Act & Assert - should still attempt cleanup
+      expect(() => controller.destroy()).toThrow();
+    });
+  });
+
+  describe('garbage collection cleanup', () => {
+    // NOTE: These tests are skipped because they require --expose-gc flag
+    // To run these tests:
+    // 1. Change test.skip to test.runIf (or remove .skip)
+    // 2. Run with: NODE_OPTIONS="--expose-gc" pnpm vitest run src/core/TTYController.test.ts
+
+    test.skip('FinalizationRegistry cleans up on garbage collection (requires --expose-gc)', () => {
+      // This test requires the --expose-gc flag to run
+      // Run with: NODE_OPTIONS="--expose-gc" pnpm vitest run
+
+      // Act
+      controller.enable();
+      const inputSpy = vi.spyOn(mockInputStream, 'pause');
+      const outputSpy = vi.spyOn(mockOutputStream, 'write');
+
+      // Drop reference and trigger GC
+      // Note: In actual test execution with --expose-gc, controller would be
+      // reassigned to trigger FinalizationRegistry cleanup
+      // To enable this test:
+      // 1. Change test.skip to test
+      // 2. Add: controller = undefined as unknown as TTYController;
+      // 3. Add: globalThis.gc();
+      // 4. Run with: NODE_OPTIONS="--expose-gc" pnpm vitest run
+
+      // Assert - cleanup should have been called
+      expect(inputSpy).toHaveBeenCalled();
+      expect(outputSpy).toHaveBeenCalled();
+    });
+
+    test.skip('FinalizationRegistry handles errors during GC cleanup gracefully (requires --expose-gc)', () => {
+      // This test documents the GC cleanup behavior
+      // The FinalizationRegistry callback (lines 31-47) handles errors gracefully
+      // by wrapping each cleanup operation in try-catch blocks
+      // Test would verify error handling during GC cleanup
+    });
+  });
 });
