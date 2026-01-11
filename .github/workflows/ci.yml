@@ -74,10 +74,10 @@ jobs:
         run: pnpm run check
 
       - name: Run tests
-        run: pnpm test
+        run: NODE_OPTIONS="--expose-gc" pnpm test
 
       - name: Generate coverage report
-        run: pnpm run test:coverage:lcov
+        run: NODE_OPTIONS="--expose-gc" pnpm run test:coverage:lcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
