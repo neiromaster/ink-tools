@@ -92,6 +92,9 @@ export class MouseConvenienceMethods {
 
       const allEvents: MouseEventAction[] = ['press', 'release', 'drag', 'wheel', 'move', 'click'];
 
+      // Store handler references to ensure we remove the same functions we added
+      const handlers = new Map<MouseEventAction, (event: MouseEvent) => void>();
+
       const inputHandler =
         (_action: MouseEventAction) =>
         (event: MouseEvent): void => {
@@ -102,14 +105,16 @@ export class MouseConvenienceMethods {
       const cleanup = (): void => {
         clearTimeout(timeoutId);
         signal?.removeEventListener('abort', abortHandler);
-        allEvents.forEach((action) => {
-          this.emitter.off(action, inputHandler(action));
+        handlers.forEach((handler, action) => {
+          this.emitter.off(action, handler);
         });
       };
 
       signal?.addEventListener('abort', abortHandler);
       allEvents.forEach((action) => {
-        this.emitter.on(action, inputHandler(action));
+        const handler = inputHandler(action);
+        handlers.set(action, handler);
+        this.emitter.on(action, handler);
       });
     });
   }
