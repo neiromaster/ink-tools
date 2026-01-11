@@ -1,23 +1,21 @@
-import type { DOMElement } from 'ink';
 import type { FC, PropsWithChildren } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { MouseEvent as XtermMouseEvent } from 'xterm-mouse';
-import { Mouse } from 'xterm-mouse';
-import { DEFAULT_PROVIDER_OPTIONS, DEV_WARNING, ERRORS, MOUSE_EVENTS } from './constants';
+import { DEFAULT_PROVIDER_OPTIONS, MOUSE_EVENTS } from './constants';
 import { MouseContext, MouseRegistryContext } from './context';
-import { getBoundingClientRect } from './geometry';
-import type { BoundingClientRect, MouseContextValue, MouseRegistryContextValue } from './types';
-import { isPointInRect } from './utils/geometry';
+import { createMouseEventHandlers } from './hooks/createMouseEventHandlers';
+import { useElementBoundsCache } from './hooks/useElementBoundsCache';
+import { useMouseInstance } from './hooks/useMouseInstance';
+import type { MouseContextValue, MouseRegistryContextValue } from './types';
 
 type MouseProviderProps = PropsWithChildren<{
   readonly autoEnable?: boolean;
   readonly cacheInvalidationMs?: number;
 }>;
 
-type CachedElementState = {
-  isHovering: boolean;
-  bounds?: BoundingClientRect;
-  boundsTimestamp?: number;
+type HandlerEntry = {
+  type: 'click' | 'mouseEnter' | 'mouseLeave' | 'mousePress' | 'mouseRelease' | 'mouseMove' | 'mouseDrag' | 'wheel';
+  ref: React.RefObject<unknown>;
+  handler: unknown;
 };
 
 export const MouseProvider: FC<MouseProviderProps> = ({
@@ -26,29 +24,13 @@ export const MouseProvider: FC<MouseProviderProps> = ({
   cacheInvalidationMs = DEFAULT_PROVIDER_OPTIONS.cacheInvalidationMs,
 }: MouseProviderProps) => {
   const [isEnabled, setIsEnabled] = useState(false);
-  const [isTracking, setIsTracking] = useState(false);
 
-  const mouseRef = useRef<Mouse | null>(null);
-  const handlersRef = useRef<
-    Map<
-      string,
-      {
-        type:
-          | 'click'
-          | 'mouseEnter'
-          | 'mouseLeave'
-          | 'mousePress'
-          | 'mouseRelease'
-          | 'mouseMove'
-          | 'mouseDrag'
-          | 'wheel';
-        ref: React.RefObject<unknown>;
-        handler: unknown;
-      }
-    >
-  >(new Map());
-  // Track hover state and cached bounds per element (ref)
-  const hoverStateRef = useRef<WeakMap<React.RefObject<unknown>, CachedElementState>>(new WeakMap());
+  // Use extracted hooks for Mouse instance and cache management
+  const { mouseRef, isTracking } = useMouseInstance(autoEnable);
+  const { getCachedState, hoverStateRef } = useElementBoundsCache(cacheInvalidationMs);
+
+  // Store registered event handlers
+  const handlersRef = useRef<Map<string, HandlerEntry>>(new Map());
 
   // Unified handler registration
   const registerHandler = useCallback(
@@ -64,7 +46,7 @@ export const MouseProvider: FC<MouseProviderProps> = ({
         | 'mouseMove'
         | 'mouseDrag'
         | 'wheel',
-      handler: (event: XtermMouseEvent) => void,
+      handler: unknown,
     ) => {
       handlersRef.current.set(id, { type: eventType, ref, handler });
     },
@@ -85,112 +67,21 @@ export const MouseProvider: FC<MouseProviderProps> = ({
     [registerHandler, unregisterHandler],
   );
 
-  // Initialize mouse instance and setup event listeners
+  // Setup event listeners using extracted handler creation logic
   useEffect((): (() => void) => {
-    if (!Mouse.isSupported()) {
-      console.warn(`${DEV_WARNING} ${ERRORS.NOT_SUPPORTED}`);
+    const mouse = mouseRef.current;
+    if (!mouse) {
       return () => {
         // noop
       };
     }
 
-    const mouse = new Mouse();
-    mouseRef.current = mouse;
-
-    if (autoEnable) {
-      mouse.enable();
-      setIsEnabled(true);
-    }
-
-    const getCachedState = (ref: React.RefObject<unknown>): CachedElementState => {
-      const existing = hoverStateRef.current.get(ref);
-      const now = Date.now();
-
-      // Check if cache is valid
-      if (existing?.bounds && existing.boundsTimestamp && now - existing.boundsTimestamp < cacheInvalidationMs) {
-        return existing;
-      }
-
-      // Cache miss or expired - recalculate bounds
-      const bounds = getBoundingClientRect(ref.current as DOMElement | null);
-      const state: CachedElementState = {
-        isHovering: existing?.isHovering ?? false,
-        bounds,
-        boundsTimestamp: now,
-      };
-
-      hoverStateRef.current.set(ref, state);
-      return state;
-    };
-
-    const createGenericHandler =
-      (eventType: 'click' | 'wheel' | 'mousePress' | 'mouseRelease' | 'mouseMove' | 'mouseDrag') =>
-      (event: XtermMouseEvent): void => {
-        const { x, y } = event;
-
-        handlersRef.current.forEach((entry) => {
-          if (entry.type !== eventType) return;
-
-          const cached = getCachedState(entry.ref);
-          if (!cached.bounds) return;
-
-          if (isPointInRect(x, y, cached.bounds)) {
-            (entry.handler as (event: XtermMouseEvent) => void)(event);
-          }
-        });
-      };
-
-    // Move event handler (for hover and mouse move)
-    const handleMove = (event: XtermMouseEvent): void => {
-      const { x, y } = event;
-
-      // Handle all event types in a single pass
-      handlersRef.current.forEach((entry) => {
-        const cached = getCachedState(entry.ref);
-
-        if (!cached.bounds) return;
-
-        const isInside = isPointInRect(x, y, cached.bounds);
-
-        switch (entry.type) {
-          case 'mouseMove':
-            if (isInside) {
-              (entry.handler as (event: XtermMouseEvent) => void)(event);
-            }
-            break;
-
-          case 'mouseEnter':
-            if (isInside !== cached.isHovering) {
-              cached.isHovering = isInside;
-              hoverStateRef.current.set(entry.ref, cached);
-              if (isInside) {
-                (entry.handler as (event: XtermMouseEvent) => void)(event);
-              }
-            }
-            break;
-
-          case 'mouseLeave':
-            if (isInside !== cached.isHovering) {
-              cached.isHovering = isInside;
-              hoverStateRef.current.set(entry.ref, cached);
-              if (!isInside) {
-                (entry.handler as (event: XtermMouseEvent) => void)(event);
-              }
-            }
-            break;
-
-          default:
-            break;
-        }
-      });
-    };
-
-    // Create handlers from the generic factory
-    const handleClick = createGenericHandler('click');
-    const handleWheel = createGenericHandler('wheel');
-    const handlePress = createGenericHandler('mousePress');
-    const handleRelease = createGenericHandler('mouseRelease');
-    const handleDrag = createGenericHandler('mouseDrag');
+    // Create event handlers using extracted function
+    const { handleClick, handleMove, handleWheel, handlePress, handleRelease, handleDrag } = createMouseEventHandlers(
+      getCachedState,
+      hoverStateRef.current,
+      handlersRef.current,
+    );
 
     // Register event listeners
     mouse.on(MOUSE_EVENTS.CLICK, handleClick);
@@ -200,18 +91,11 @@ export const MouseProvider: FC<MouseProviderProps> = ({
     mouse.on(MOUSE_EVENTS.RELEASE, handleRelease);
     mouse.on(MOUSE_EVENTS.DRAG, handleDrag);
 
-    // Set tracking state
-    setIsTracking(true);
-
     return () => {
-      if (mouseRef.current) {
-        mouseRef.current.disable();
-        mouseRef.current = null;
-      }
-      setIsEnabled(false);
-      setIsTracking(false);
+      // Event listeners are automatically removed when mouse.disable() is called
+      // No need to manually remove them here
     };
-  }, [autoEnable, cacheInvalidationMs]);
+  }, [getCachedState, hoverStateRef, mouseRef.current]);
 
   // Enable method
   const enable = useCallback((): void => {
@@ -219,7 +103,7 @@ export const MouseProvider: FC<MouseProviderProps> = ({
       mouseRef.current.enable();
       setIsEnabled(true);
     }
-  }, [isEnabled]);
+  }, [isEnabled, mouseRef.current]);
 
   // Disable method
   const disable = useCallback((): void => {
@@ -227,7 +111,7 @@ export const MouseProvider: FC<MouseProviderProps> = ({
       mouseRef.current.disable();
       setIsEnabled(false);
     }
-  }, [isEnabled]);
+  }, [isEnabled, mouseRef.current]);
 
   // Context value
   const contextValue = useMemo<MouseContextValue>(
