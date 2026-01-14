@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { describe, expect, test } from 'vitest';
 import { useMouse } from '../hooks/useMouse';
 import { useOnClick } from '../hooks/useOnClick';
-import { MouseProvider } from '../provider';
+import { MouseProvider } from '.';
 
 // Test component that intentionally calls hook outside provider
 function _TestHookOutsideProvider({ children }: { children: () => void }) {

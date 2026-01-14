@@ -11,7 +11,7 @@ import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
 import { describe, expect, test, vi } from 'vitest';
 import { useMouse } from '../hooks/useMouse';
-import { MouseProvider } from '../provider';
+import { MouseProvider } from '.';
 
 describe('MouseProvider - State Management', () => {
   describe('Enable/Disable Functionality', () => {
