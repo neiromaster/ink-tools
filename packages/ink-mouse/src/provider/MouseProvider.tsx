@@ -1,13 +1,13 @@
 import type { FC, PropsWithChildren } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DEFAULT_PROVIDER_OPTIONS, MOUSE_EVENTS } from './constants';
-import { MouseContext, MouseRegistryContext } from './context';
-import { createMouseEventHandlers } from './hooks/createMouseEventHandlers';
-import { useElementBoundsCache } from './hooks/useElementBoundsCache';
-import { useMouseInstance } from './hooks/useMouseInstance';
-import type { MouseContextValue, MouseRegistryContextValue } from './types';
+import { DEFAULT_PROVIDER_OPTIONS, MOUSE_EVENTS } from '../constants';
+import { MouseContext, MouseRegistryContext } from '../context';
+import { createMouseEventHandlers } from '../hooks/createMouseEventHandlers';
+import { useElementBoundsCache } from '../hooks/useElementBoundsCache';
+import { useMouseInstance } from '../hooks/useMouseInstance';
+import type { MouseContextValue, MouseRegistryContextValue } from '../types';
 
-type MouseProviderProps = PropsWithChildren<{
+export type MouseProviderProps = PropsWithChildren<{
   readonly autoEnable?: boolean;
   readonly cacheInvalidationMs?: number;
 }>;

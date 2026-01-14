@@ -19,8 +19,8 @@ import { createRef } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { createMockDOMElement } from '../../test/mocks/ink-element';
 import { useOnClick } from '../hooks/useOnClick';
-import { MouseProvider } from '../provider';
 import type { ClickHandler } from '../types';
+import { MouseProvider } from '.';
 
 /**
  * Test component that registers a click handler

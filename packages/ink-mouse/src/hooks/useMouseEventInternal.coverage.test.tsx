@@ -10,8 +10,8 @@ import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
 import { createRef } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { useMouseEventInternal } from './hooks/useMouseEventInternal';
-import { MouseProvider } from './provider';
+import { MouseProvider } from '../provider';
+import { useMouseEventInternal } from './useMouseEventInternal';
 
 describe('useMouseEventInternal - Additional Coverage', () => {
   beforeEach(() => {

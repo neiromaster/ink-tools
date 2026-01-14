@@ -1,14 +1,6 @@
-/**
- * Hook Edge Cases Tests
- *
- * Tests edge cases in hook behavior, error handling, and lifecycle.
- *
- * Simplified approach: Focus on meaningful edge cases that affect behavior.
- */
-
 import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
-import { createRef } from 'react';
+import { createRef, useRef, useState } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { MouseProvider } from '../provider';
 import type { ClickHandler } from '../types';
@@ -29,12 +21,77 @@ function TestHookOutsideProvider({ children }: { children: () => void }) {
   );
 }
 
-describe('Hooks - Edge Cases', () => {
+describe('useOnClick', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('useMouseEventInternal - Edge Cases', () => {
+  test('registers click handler on mount', () => {
+    function TestComponent() {
+      const ref = useRef<unknown>({ current: null });
+      const [clicked, setClicked] = useState(false);
+
+      useOnClick(ref, () => {
+        setClicked(true);
+      });
+
+      return (
+        <Box>
+          <Text>{clicked ? 'Clicked' : 'Not Clicked'}</Text>
+        </Box>
+      );
+    }
+
+    const { lastFrame } = render(
+      <MouseProvider>
+        <TestComponent />
+      </MouseProvider>,
+    );
+
+    expect(lastFrame()).toBe('Not Clicked');
+  });
+
+  test('throws error when used outside MouseProvider', () => {
+    function TestComponent() {
+      const ref = useRef<unknown>(null);
+
+      return (
+        <TestHookOutsideProvider>
+          {() => {
+            useOnClick(ref, () => {
+              // noop
+            });
+          }}
+        </TestHookOutsideProvider>
+      );
+    }
+
+    expect(() => render(<TestComponent />)).not.toThrow();
+  });
+
+  test('handles null handler gracefully', () => {
+    function TestComponent() {
+      const ref = useRef<unknown>({ current: null });
+
+      useOnClick(ref, null);
+
+      return (
+        <Box>
+          <Text>Test</Text>
+        </Box>
+      );
+    }
+
+    const { lastFrame } = render(
+      <MouseProvider>
+        <TestComponent />
+      </MouseProvider>,
+    );
+
+    expect(lastFrame()).toBe('Test');
+  });
+
+  describe('Edge Cases', () => {
     test('handles null ref with warning in development', () => {
       const mockHandler: ClickHandler = vi.fn();
 
@@ -125,7 +182,7 @@ describe('Hooks - Edge Cases', () => {
     });
   });
 
-  describe('useMouseEventInternal - Registration Lifecycle', () => {
+  describe('Registration Lifecycle', () => {
     test('registers handler on mount with all parameters', () => {
       const mockHandler: ClickHandler = vi.fn();
       const mockRef = createRef<unknown>();

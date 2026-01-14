@@ -1,7 +1,7 @@
 import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
 import { describe, expect, test } from 'vitest';
-import { useBoundingClientRect, useElementDimensions, useElementPosition } from './geometry';
+import { useBoundingClientRect, useElementDimensions, useElementPosition } from './hooks';
 
 describe('useElementPosition', () => {
   test('returns initial position {0, 0}', () => {
