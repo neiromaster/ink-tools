@@ -1,7 +1,7 @@
 import type { DOMElement } from 'ink';
 import { describe, expect, test } from 'vitest';
-import { createMockDOMElement, createMockDOMElementChain } from '../test/mocks/ink-element';
-import { getBoundingClientRect, getElementDimensions, getElementPosition } from './geometry';
+import { createMockDOMElement, createMockDOMElementChain } from '../../test/mocks/ink-element';
+import { getBoundingClientRect, getElementDimensions, getElementPosition } from './utils';
 
 describe('getElementPosition', () => {
   test('returns position for valid element with yogaNode', () => {
