@@ -49,13 +49,13 @@
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:gc": "NODE_OPTIONS=\"--expose-gc\" vitest run",
-    "dev:basic": "tsx watch examples/basic.ts",
-    "dev:streaming": "tsx watch examples/streaming.ts",
-    "dev:custom-threshold": "tsx watch examples/custom-threshold.ts",
-    "dev:pause-resume": "tsx watch examples/pause-resume.ts",
-    "dev:interactive-buttons": "tsx watch examples/interactive-buttons.ts",
-    "dev:interactive-menu": "tsx watch examples/interactive-menu.ts",
-    "dev:interactive-grid": "tsx watch examples/interactive-grid.ts"
+    "dev:basic": "vite-node --watch examples/basic.ts",
+    "dev:streaming": "vite-node --watch examples/streaming.ts",
+    "dev:custom-threshold": "vite-node --watch examples/custom-threshold.ts",
+    "dev:pause-resume": "vite-node --watch examples/pause-resume.ts",
+    "dev:interactive-buttons": "vite-node --watch examples/interactive-buttons.ts",
+    "dev:interactive-menu": "vite-node --watch examples/interactive-menu.ts",
+    "dev:interactive-grid": "vite-node --watch examples/interactive-grid.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
@@ -63,9 +63,9 @@
     "dprint": "^0.51.1",
     "markdownlint-cli2": "^0.20.0",
     "tsup": "^8.5.1",
-    "tsx": "^4.0.0",
     "typescript": "^5",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "vite-node": "^5.3.0"
   },
   "engines": {
     "node": ">=20"

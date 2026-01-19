@@ -42,21 +42,18 @@ importers:
   packages/ink-mouse:
     dependencies:
       ink:
-        specifier: ^6.6.0
+        specifier: ">=6"
         version: 6.6.0(@types/react@19.2.7)(react@19.2.3)
       react:
-        specifier: ^19.2.3
+        specifier: ">=17"
         version: 19.2.3
       xterm-mouse:
         specifier: workspace:*
         version: link:../xterm-mouse
     devDependencies:
       "@testing-library/react":
-        specifier: ^16.3.1
-        version: 16.3.1(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)
-      "@testing-library/react-hooks":
-        specifier: ^8.0.1
-        version: 8.0.1(@types/react@19.2.7)
+        specifier: ^16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       "@types/react":
         specifier: ^19.2.7
         version: 19.2.7
@@ -96,12 +93,12 @@ importers:
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
-      tsx:
-        specifier: ^4.0.0
-        version: 4.21.0
       typescript:
         specifier: ^5
         version: 5.9.3
+      vite-node:
+        specifier: ^5.3.0
+        version: 5.3.0(@types/node@20.19.27)(tsx@4.21.0)
       vitest:
         specifier: ^4.0.16
         version: 4.0.16(@types/node@20.19.27)(tsx@4.21.0)
@@ -895,27 +892,9 @@ packages:
     }
     engines: { node: ">=18" }
 
-  "@testing-library/react-hooks@8.0.1":
+  "@testing-library/react@16.3.2":
     resolution: {
-      integrity: sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==,
-    }
-    engines: { node: ">=12" }
-    peerDependencies:
-      "@types/react": ^16.9.0 || ^17.0.0
-      react: ^16.9.0 || ^17.0.0
-      react-dom: ^16.9.0 || ^17.0.0
-      react-test-renderer: ^16.9.0 || ^17.0.0
-    peerDependenciesMeta:
-      "@types/react":
-        optional: true
-      react-dom:
-        optional: true
-      react-test-renderer:
-        optional: true
-
-  "@testing-library/react@16.3.1":
-    resolution: {
-      integrity: sha512-gr4KtAWqIOQoucWYD/f6ki+j5chXfcPc74Col/6poTyqTmn7zRmodWahWRCp8tYd+GMqBonw6hstNzqjbs6gjw==,
+      integrity: sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g==,
     }
     engines: { node: ">=18" }
     peerDependencies:
@@ -1410,6 +1389,11 @@ packages:
   es-module-lexer@1.7.0:
     resolution: {
       integrity: sha512-jEQoCwk8hyb2AZziIOLhDqpm5+2ww5uIE6lkO/6jcOCusfk6LhMHpXXfBLXTZ7Ydyt0j4VoUQv6uGNYbdW+kBA==,
+    }
+
+  es-module-lexer@2.0.0:
+    resolution: {
+      integrity: sha512-5POEcUuZybH7IdmGsD8wlf0AI55wMecM9rVBTI/qEAy2c1kTOm3DjFYjrBdI2K3BaJjJYfYFeRtM0t9ssnRuxw==,
     }
 
   es-toolkit@1.43.0:
@@ -2337,13 +2321,12 @@ packages:
       integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==,
     }
 
-  react-error-boundary@3.1.4:
+  react-dom@19.2.3:
     resolution: {
-      integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==,
+      integrity: sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg==,
     }
-    engines: { node: ">=10", npm: ">=6" }
     peerDependencies:
-      react: ">=16.13.1"
+      react: ^19.2.3
 
   react-is@17.0.2:
     resolution: {
@@ -2727,6 +2710,13 @@ packages:
       integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==,
     }
     engines: { node: ^14.17.0 || ^16.13.0 || >=18.0.0 }
+
+  vite-node@5.3.0:
+    resolution: {
+      integrity: sha512-8f20COPYJujc3OKPX6OuyBy3ZIv2det4eRRU4GY1y2MjbeGSUmPjedxg1b72KnTagCofwvZ65ThzjxDW2AtQFQ==,
+    }
+    engines: { node: ^20.19.0 || >=22.12.0 }
+    hasBin: true
 
   vite@7.3.1:
     resolution: {
@@ -3367,17 +3357,12 @@ snapshots:
       picocolors: 1.1.1
       pretty-format: 27.5.1
 
-  "@testing-library/react-hooks@8.0.1(@types/react@19.2.7)":
-    dependencies:
-      "@babel/runtime": 7.28.4
-      react-error-boundary: 3.1.4
-    optionalDependencies:
-      "@types/react": 19.2.7
-
-  "@testing-library/react@16.3.1(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)":
+  "@testing-library/react@16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)":
     dependencies:
       "@babel/runtime": 7.28.4
       "@testing-library/dom": 10.4.1
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
     optionalDependencies:
       "@types/react": 19.2.7
       "@types/react-dom": 19.2.3(@types/react@19.2.7)
@@ -3674,6 +3659,8 @@ snapshots:
 
   es-module-lexer@1.7.0: {}
 
+  es-module-lexer@2.0.0: {}
+
   es-toolkit@1.43.0: {}
 
   esbuild@0.27.2:
@@ -3774,6 +3761,7 @@ snapshots:
   get-tsconfig@4.13.0:
     dependencies:
       resolve-pkg-maps: 1.0.0
+    optional: true
 
   glob-parent@5.1.2:
     dependencies:
@@ -4375,9 +4363,10 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
-  react-error-boundary@3.1.4:
+  react-dom@19.2.3(react@19.2.3):
     dependencies:
-      "@babel/runtime": 7.28.4
+      react: 19.2.3
+      scheduler: 0.27.0
 
   react-is@17.0.2: {}
 
@@ -4401,7 +4390,8 @@ snapshots:
 
   resolve-from@5.0.0: {}
 
-  resolve-pkg-maps@1.0.0: {}
+  resolve-pkg-maps@1.0.0:
+    optional: true
 
   restore-cursor@4.0.0:
     dependencies:
@@ -4606,6 +4596,7 @@ snapshots:
       get-tsconfig: 4.13.0
     optionalDependencies:
       fsevents: 2.3.3
+    optional: true
 
   type-fest@4.41.0: {}
 
@@ -4626,6 +4617,26 @@ snapshots:
   universalify@0.1.2: {}
 
   validate-npm-package-name@5.0.1: {}
+
+  vite-node@5.3.0(@types/node@20.19.27)(tsx@4.21.0):
+    dependencies:
+      cac: 6.7.14
+      es-module-lexer: 2.0.0
+      obug: 2.1.1
+      pathe: 2.0.3
+      vite: 7.3.1(@types/node@20.19.27)(tsx@4.21.0)
+    transitivePeerDependencies:
+      - "@types/node"
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
 
   vite@7.3.1(@types/node@20.19.27)(tsx@4.21.0):
     dependencies:
