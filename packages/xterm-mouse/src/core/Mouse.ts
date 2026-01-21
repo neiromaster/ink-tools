@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { ListenerFor, MouseEvent, MouseEventAction, MouseOptions } from '../types';
+import type { ListenerFor, MouseEvent, MouseEventAction, MouseOptions, ReadableStreamWithEncoding } from '../types';
 import { EventStreamFactory } from './EventStreamFactory';
 import { MouseConvenienceMethods } from './MouseConvenienceMethods';
 import { MouseEventManager } from './MouseEventManager';
@@ -109,23 +109,28 @@ class Mouse {
   /**
    * Checks if the current terminal environment supports mouse events.
    *
-   * This is a convenience method that checks if `process.stdin.isTTY` is true,
-   * which is the primary requirement for mouse event tracking.
+   * This is a convenience method that wraps {@link checkSupport} and returns
+   * a simple boolean. It checks if the provided streams (or `process.stdin`/
+   * `process.stdout` by default) are TTYs.
    *
    * **Use Cases:**
    * - Before creating a Mouse instance in environments that may not support TTY
    * - To provide better error messages in CLI tools
    * - To conditionally enable mouse features in applications
+   * - Checking custom streams before passing to Mouse constructor
    *
-   * **Note:** This only checks the default `process.stdin` and `process.stdout`.
-   * If you're using custom streams, use `checkSupport()` instead.
+   * **Note:** For detailed error information (e.g., to distinguish between
+   * input and output stream issues), use {@link checkSupport} instead.
    *
+   * @param inputStream Optional input stream to check (defaults to process.stdin)
+   * @param outputStream Optional output stream to check (defaults to process.stdout)
    * @returns true if the terminal likely supports mouse events
    *
    * @example
    * ```ts
    * import { Mouse } from 'xterm-mouse';
    *
+   * // Check default streams
    * if (Mouse.isSupported()) {
    *   const mouse = new Mouse();
    *   mouse.enable();
@@ -133,9 +138,25 @@ class Mouse {
    *   console.log('Mouse events not supported in this environment');
    * }
    * ```
+   *
+   * @example
+   * ```ts
+   * // Check custom streams
+   * const customStdin = getCustomStdin();
+   * const customStdout = getCustomStdout();
+   *
+   * if (Mouse.isSupported(customStdin, customStdout)) {
+   *   const mouse = new Mouse({
+   *     inputStream: customStdin,
+   *     outputStream: customStdout,
+   *   });
+   *   mouse.enable();
+   * }
+   * ```
    */
-  static isSupported(): boolean {
-    return process.stdin.isTTY === true && process.stdout.isTTY === true;
+  static isSupported(inputStream?: ReadableStreamWithEncoding, outputStream?: NodeJS.WriteStream): boolean {
+    const result = Mouse.checkSupport({ inputStream, outputStream });
+    return result === Mouse.SupportCheckResult.Supported;
   }
 
   /**

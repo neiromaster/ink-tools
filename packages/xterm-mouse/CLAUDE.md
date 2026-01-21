@@ -76,12 +76,27 @@ Vitest, tests co-located (`.test.ts`). Mouse class requires TTY for integration 
 
 - Use **pnpm**
 - ESM-only (`"type": "module"`)
-- Terminal mouse tracking **requires TTY** - won't work in piped/non-interactive environments
-- **Check support before enabling**: Use `Mouse.isSupported()` or `Mouse.checkSupport()` to verify capabilities before `mouse.enable()`
+- Terminal mouse tracking **requires TTY** - won't work in piped/non-interactive
+  environments
+- **Check support before enabling**: Use `Mouse.isSupported()` or
+  `Mouse.checkSupport()` to verify capabilities before `mouse.enable()`
+  - `Mouse.isSupported(inputStream?, outputStream?)`: Simple boolean check
+    that wraps `checkSupport()`
+  - `Mouse.checkSupport({ inputStream?, outputStream? })`: Detailed check
+    with result enum (NotTTY, OutputNotTTY, Supported)
+- Both streams must be TTY: stdin to receive events, stdout to send ANSI codes
 - `click` event is synthesized from `press` + `release`, not from terminal
 
 ## Package Structure
 
-**Includes**: `examples/` (demo scripts), `docs/` (ARCHITECTURE.md, PROTOCOLS.md, TESTING.md), `test/` (fixtures), `CONTRIBUTING.md`
+**Includes**:
 
-**Build output**: ESM (`dist/index.js` + `.d.ts`) and CJS (`dist/index.cjs` + `.d.cts`). ESM-first with CJS compatibility.
+- `examples/` (demo scripts)
+- `docs/` (ARCHITECTURE.md, PROTOCOLS.md, TESTING.md)
+- `test/` (fixtures)
+- `CONTRIBUTING.md`
+
+**Build output**:
+
+ESM (`dist/index.js` + `.d.ts`) and CJS (`dist/index.cjs` + `.d.cts`).
+ESM-first with CJS compatibility.

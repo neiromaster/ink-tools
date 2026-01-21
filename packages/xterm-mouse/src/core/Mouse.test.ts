@@ -2778,6 +2778,54 @@ describe('Mouse.isSupported()', () => {
     Object.defineProperty(process.stdin, 'isTTY', { value: originalStdinIsTTY, configurable: true });
     Object.defineProperty(process.stdout, 'isTTY', { value: originalStdoutIsTTY, configurable: true });
   });
+
+  test('should return true when custom streams are TTY', () => {
+    // Arrange
+    const inputStream = {
+      isTTY: true,
+    } as unknown as ReadableStreamWithEncoding;
+    const outputStream = {
+      isTTY: true,
+    } as unknown as NodeJS.WriteStream;
+
+    // Act
+    const result = Mouse.isSupported(inputStream, outputStream);
+
+    // Assert
+    expect(result).toBe(true);
+  });
+
+  test('should return false when custom inputStream is not TTY', () => {
+    // Arrange
+    const inputStream = {
+      isTTY: false,
+    } as unknown as ReadableStreamWithEncoding;
+    const outputStream = {
+      isTTY: true,
+    } as unknown as NodeJS.WriteStream;
+
+    // Act
+    const result = Mouse.isSupported(inputStream, outputStream);
+
+    // Assert
+    expect(result).toBe(false);
+  });
+
+  test('should return false when custom outputStream is not TTY', () => {
+    // Arrange
+    const inputStream = {
+      isTTY: true,
+    } as unknown as ReadableStreamWithEncoding;
+    const outputStream = {
+      isTTY: false,
+    } as unknown as NodeJS.WriteStream;
+
+    // Act
+    const result = Mouse.isSupported(inputStream, outputStream);
+
+    // Assert
+    expect(result).toBe(false);
+  });
 });
 
 describe('Mouse.checkSupport()', () => {

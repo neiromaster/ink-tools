@@ -36,6 +36,8 @@ src/
 
 **Provider Pattern**: MouseProvider wraps app, manages mouse tracking via xterm-mouse, maintains state, emits events. useMouse hook provides state and event handlers to components.
 
+**Ink Integration**: Uses Ink's `useStdin()` and `useStdout()` hooks to access Ink-managed streams, ensuring proper integration with the Ink application lifecycle. The xterm-mouse library controls raw mode via the `setRawMode` function from `useStdin()`.
+
 **Dependencies**:
 
 - `ink` ^6.6.0 (peer)

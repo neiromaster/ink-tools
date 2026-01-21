@@ -92,8 +92,13 @@ export const MouseProvider: FC<MouseProviderProps> = ({
     mouse.on(MOUSE_EVENTS.DRAG, handleDrag);
 
     return () => {
-      // Event listeners are automatically removed when mouse.disable() is called
-      // No need to manually remove them here
+      // Manually remove event listeners
+      mouse.off(MOUSE_EVENTS.CLICK, handleClick);
+      mouse.off(MOUSE_EVENTS.MOVE, handleMove);
+      mouse.off(MOUSE_EVENTS.WHEEL, handleWheel);
+      mouse.off(MOUSE_EVENTS.PRESS, handlePress);
+      mouse.off(MOUSE_EVENTS.RELEASE, handleRelease);
+      mouse.off(MOUSE_EVENTS.DRAG, handleDrag);
     };
   }, [getCachedState, hoverStateRef, mouseRef.current]);
 
