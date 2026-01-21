@@ -1,5 +1,5 @@
 import type { DOMElement } from 'ink';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { getBoundingClientRect } from '../geometry';
 import type { BoundingClientRect } from '../types';
 
@@ -34,26 +34,29 @@ export function useElementBoundsCache(cacheInvalidationMs: number = 100): {
   // Track hover state and cached bounds per element (ref)
   const hoverStateRef = useRef<WeakMap<React.RefObject<unknown>, CachedElementState>>(new WeakMap());
 
-  const getCachedState = (ref: React.RefObject<unknown>): CachedElementState => {
-    const existing = hoverStateRef.current.get(ref);
-    const now = Date.now();
+  const getCachedState = useCallback(
+    (ref: React.RefObject<unknown>): CachedElementState => {
+      const existing = hoverStateRef.current.get(ref);
+      const now = Date.now();
 
-    // Check if cache is valid
-    if (existing?.bounds && existing.boundsTimestamp && now - existing.boundsTimestamp < cacheInvalidationMs) {
-      return existing;
-    }
+      // Check if cache is valid
+      if (existing?.bounds && existing.boundsTimestamp && now - existing.boundsTimestamp < cacheInvalidationMs) {
+        return existing;
+      }
 
-    // Cache miss or expired - recalculate bounds
-    const bounds = getBoundingClientRect(ref.current as DOMElement | null);
-    const state: CachedElementState = {
-      isHovering: existing?.isHovering ?? false,
-      bounds,
-      boundsTimestamp: now,
-    };
+      // Cache miss or expired - recalculate bounds
+      const bounds = getBoundingClientRect(ref.current as DOMElement | null);
+      const state: CachedElementState = {
+        isHovering: existing?.isHovering ?? false,
+        bounds,
+        boundsTimestamp: now,
+      };
 
-    hoverStateRef.current.set(ref, state);
-    return state;
-  };
+      hoverStateRef.current.set(ref, state);
+      return state;
+    },
+    [cacheInvalidationMs],
+  );
 
   return { getCachedState, hoverStateRef };
 }

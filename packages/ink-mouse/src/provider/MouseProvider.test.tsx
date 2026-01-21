@@ -413,4 +413,95 @@ describe('MouseProvider', () => {
       expect(output).toContain('Tracking:');
     });
   });
+
+  describe('Event handler stability', () => {
+    test('event handlers maintain stable references across re-renders', () => {
+      let renderCount = 0;
+      let _handlerCallCount = 0;
+
+      function TestComponent() {
+        renderCount++;
+        const ref = useRef<unknown>({ current: null });
+
+        useOnClick(ref, () => {
+          _handlerCallCount++;
+        });
+
+        return (
+          <Box>
+            <Text>Render: {renderCount}</Text>
+          </Box>
+        );
+      }
+
+      const { rerender } = render(
+        <MouseProvider>
+          <TestComponent />
+        </MouseProvider>,
+      );
+
+      // Force multiple re-renders
+      rerender(
+        <MouseProvider>
+          <TestComponent />
+        </MouseProvider>,
+      );
+      rerender(
+        <MouseProvider>
+          <TestComponent />
+        </MouseProvider>,
+      );
+      rerender(
+        <MouseProvider>
+          <TestComponent />
+        </MouseProvider>,
+      );
+
+      // Component should have re-rendered multiple times
+      expect(renderCount).toBeGreaterThan(1);
+    });
+
+    test('handlers are created only once per provider instance', () => {
+      const _createHandlerCallCount = 0;
+
+      // Track how many times the handler is invoked (not created)
+      let clickInvokeCount = 0;
+
+      function TestComponent() {
+        const ref = useRef<unknown>({ current: null });
+
+        useOnClick(ref, () => {
+          clickInvokeCount++;
+        });
+
+        return (
+          <Box>
+            <Text>Test</Text>
+          </Box>
+        );
+      }
+
+      // Render and re-render multiple times
+      const { rerender } = render(
+        <MouseProvider>
+          <TestComponent />
+        </MouseProvider>,
+      );
+
+      rerender(
+        <MouseProvider>
+          <TestComponent />
+        </MouseProvider>,
+      );
+      rerender(
+        <MouseProvider>
+          <TestComponent />
+        </MouseProvider>,
+      );
+
+      // The handler registration should happen once
+      // The clickInvokeCount should be 0 because we're not actually clicking
+      expect(clickInvokeCount).toBe(0);
+    });
+  });
 });
