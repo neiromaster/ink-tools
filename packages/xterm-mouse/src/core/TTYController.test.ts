@@ -497,72 +497,72 @@ describe('TTYController', () => {
     test('uses custom setRawMode when provided', () => {
       // Arrange
       const customSetRawMode = vi.fn();
-      const mockInputStream2 = new MockReadableStream();
-      const mockOutputStream2 = new MockWritableStream();
-      const handleEventSpy2 = vi.fn();
+      const customInputStream = new MockReadableStream();
+      const customOutputStream = new MockWritableStream();
+      const customHandleEvent = vi.fn();
 
       // Act
-      const controller2 = new TTYController(
-        mockInputStream2 as unknown as import('../types').ReadableStreamWithEncoding,
-        mockOutputStream2 as unknown as NodeJS.WriteStream,
-        handleEventSpy2,
+      const controllerWithCustom = new TTYController(
+        customInputStream as unknown as import('../types').ReadableStreamWithEncoding,
+        customOutputStream as unknown as NodeJS.WriteStream,
+        customHandleEvent,
         customSetRawMode,
       );
-      controller2.enable();
+      controllerWithCustom.enable();
 
       // Assert
       expect(customSetRawMode).toHaveBeenCalledWith(true);
-      expect(mockInputStream2.isRaw).toBe(false); // Default setRawMode should NOT be called
+      expect(customInputStream.isRaw).toBe(false); // Default setRawMode should NOT be called
 
       // Cleanup
-      controller2.disable();
+      controllerWithCustom.disable();
       expect(customSetRawMode).toHaveBeenCalledWith(false);
     });
 
     test('uses default setRawMode when custom function not provided', () => {
       // Arrange
-      const mockInputStream2 = new MockReadableStream();
-      const mockOutputStream2 = new MockWritableStream();
-      const handleEventSpy2 = vi.fn();
+      const defaultInputStream = new MockReadableStream();
+      const defaultOutputStream = new MockWritableStream();
+      const defaultHandleEvent = vi.fn();
 
       // Act
-      const controller2 = new TTYController(
-        mockInputStream2 as unknown as import('../types').ReadableStreamWithEncoding,
-        mockOutputStream2 as unknown as NodeJS.WriteStream,
-        handleEventSpy2,
+      const controllerWithDefault = new TTYController(
+        defaultInputStream as unknown as import('../types').ReadableStreamWithEncoding,
+        defaultOutputStream as unknown as NodeJS.WriteStream,
+        defaultHandleEvent,
       );
-      controller2.enable();
+      controllerWithDefault.enable();
 
       // Assert
-      expect(mockInputStream2.isRaw).toBe(true); // Default setRawMode was called
+      expect(defaultInputStream.isRaw).toBe(true); // Default setRawMode was called
 
       // Cleanup
-      controller2.disable();
-      expect(mockInputStream2.isRaw).toBe(false); // Default setRawMode was called with false
+      controllerWithDefault.disable();
+      expect(defaultInputStream.isRaw).toBe(false); // Default setRawMode was called with false
     });
 
     test('passes custom setRawMode to FinalizationRegistry', () => {
       // Arrange
       const customSetRawMode = vi.fn();
-      const mockInputStream2 = new MockReadableStream();
-      const mockOutputStream2 = new MockWritableStream();
-      const handleEventSpy2 = vi.fn();
+      const cleanupInputStream = new MockReadableStream();
+      const cleanupOutputStream = new MockWritableStream();
+      const cleanupHandleEvent = vi.fn();
 
       // Act
-      const controller2 = new TTYController(
-        mockInputStream2 as unknown as import('../types').ReadableStreamWithEncoding,
-        mockOutputStream2 as unknown as NodeJS.WriteStream,
-        handleEventSpy2,
+      const controllerForCleanup = new TTYController(
+        cleanupInputStream as unknown as import('../types').ReadableStreamWithEncoding,
+        cleanupOutputStream as unknown as NodeJS.WriteStream,
+        cleanupHandleEvent,
         customSetRawMode,
       );
-      controller2.enable();
+      controllerForCleanup.enable();
 
       // Assert - enable should work
-      expect(controller2.isEnabled()).toBe(true);
+      expect(controllerForCleanup.isEnabled()).toBe(true);
       expect(customSetRawMode).toHaveBeenCalledWith(true);
 
       // Cleanup
-      controller2.destroy();
+      controllerForCleanup.destroy();
       expect(customSetRawMode).toHaveBeenCalledWith(false);
     });
   });

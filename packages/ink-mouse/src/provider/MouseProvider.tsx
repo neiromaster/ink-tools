@@ -100,7 +100,7 @@ export const MouseProvider: FC<MouseProviderProps> = ({
       mouse.off(MOUSE_EVENTS.RELEASE, handleRelease);
       mouse.off(MOUSE_EVENTS.DRAG, handleDrag);
     };
-  }, [getCachedState, hoverStateRef, mouseRef.current]);
+  }, [getCachedState, hoverStateRef, mouseRef]);
 
   // Enable method
   const enable = useCallback((): void => {
@@ -108,7 +108,7 @@ export const MouseProvider: FC<MouseProviderProps> = ({
       mouseRef.current.enable();
       setIsEnabled(true);
     }
-  }, [isEnabled, mouseRef.current]);
+  }, [isEnabled, mouseRef]);
 
   // Disable method
   const disable = useCallback((): void => {
@@ -116,7 +116,7 @@ export const MouseProvider: FC<MouseProviderProps> = ({
       mouseRef.current.disable();
       setIsEnabled(false);
     }
-  }, [isEnabled, mouseRef.current]);
+  }, [isEnabled, mouseRef]);
 
   // Context value
   const contextValue = useMemo<MouseContextValue>(

@@ -417,14 +417,13 @@ describe('MouseProvider', () => {
   describe('Event handler stability', () => {
     test('event handlers maintain stable references across re-renders', () => {
       let renderCount = 0;
-      let _handlerCallCount = 0;
 
       function TestComponent() {
         renderCount++;
         const ref = useRef<unknown>({ current: null });
 
         useOnClick(ref, () => {
-          _handlerCallCount++;
+          // Handler should remain stable across re-renders
         });
 
         return (
@@ -462,8 +461,6 @@ describe('MouseProvider', () => {
     });
 
     test('handlers are created only once per provider instance', () => {
-      const _createHandlerCallCount = 0;
-
       // Track how many times the handler is invoked (not created)
       let clickInvokeCount = 0;
 

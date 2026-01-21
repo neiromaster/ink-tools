@@ -1,4 +1,5 @@
 import { useStdin, useStdout } from 'ink';
+import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Mouse } from 'xterm-mouse';
 import { DEV_WARNING, ERRORS } from '../constants';
@@ -21,7 +22,7 @@ import { DEV_WARNING, ERRORS } from '../constants';
  * ```
  */
 export function useMouseInstance(autoEnable: boolean): {
-  mouseRef: React.MutableRefObject<Mouse | null>;
+  mouseRef: RefObject<Mouse | null>;
   isTracking: boolean;
 } {
   const mouseRef = useRef<Mouse | null>(null);
@@ -58,7 +59,7 @@ export function useMouseInstance(autoEnable: boolean): {
     // Cleanup function
     return (): void => {
       if (mouseRef.current) {
-        mouseRef.current.destroy();
+        mouseRef.current.destroy?.();
         mouseRef.current = null;
       }
       setIsTracking(false);
