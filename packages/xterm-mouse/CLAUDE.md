@@ -18,7 +18,9 @@ pnpm run dev:basic          # Run basic example
 pnpm run dev:streaming      # Run streaming example
 ```
 
-Additional examples: `dev:custom-threshold`, `dev:pause-resume`, `dev:interactive-buttons/menu/grid`
+Additional examples:
+`dev:custom-threshold`, `dev:pause-resume`, `dev:custom-streams`,
+`dev:interactive-buttons/menu/grid`
 
 ## Architecture
 

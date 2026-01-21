@@ -445,7 +445,7 @@ For applications that require precise clicks, set the threshold to 0 to require 
 ```typescript
 import { Mouse } from 'xterm-mouse';
 
-const mouse = new Mouse(process.stdin, process.stdout, undefined, {
+const mouse = new Mouse({
   clickDistanceThreshold: 0, // Require exact position
 });
 ```
@@ -459,7 +459,7 @@ const options: MouseOptions = {
   clickDistanceThreshold: 0,
 };
 
-const mouse = new Mouse(process.stdin, process.stdout, undefined, options);
+const mouse = new Mouse(options);
 ```
 
 #### Lenient Click Detection
@@ -469,8 +469,117 @@ For applications that can tolerate more movement, increase the threshold:
 ```typescript
 import { Mouse } from 'xterm-mouse';
 
-const mouse = new Mouse(process.stdin, process.stdout, undefined, {
+const mouse = new Mouse({
   clickDistanceThreshold: 5, // Allow up to 5 cells of movement
+});
+```
+
+### Custom Streams and Dependency Injection
+
+The `Mouse` class supports full dependency injection via the constructor options. All external dependencies (emitter, stdin, stdout, setRawMode) can be configured through options.
+
+#### Constructor Signature
+
+```typescript
+new Mouse(options?)
+```
+
+**Parameters:**
+
+* `options` (optional): Configuration object
+  * `emitter`: `EventEmitter` instance for mouse events (default: new EventEmitter)
+  * `inputStream`: Readable stream for mouse events (default: `process.stdin`)
+  * `outputStream`: Writable stream for ANSI codes (default: `process.stdout`)
+  * `setRawMode`: Custom function to set raw mode (default: `stream.setRawMode`)
+  * `clickDistanceThreshold`: Max distance for click detection (default: `1`)
+
+#### Examples
+
+```typescript
+// Default: uses process.stdin/stdout
+const mouse = new Mouse();
+
+// Custom streams
+const mouse2 = new Mouse({
+  inputStream: myInputStream,
+  outputStream: myOutputStream,
+});
+
+// Custom emitter
+const mouse3 = new Mouse({
+  emitter: myEventEmitter,
+});
+
+// Testing with mocked setRawMode
+const mouse4 = new Mouse({
+  setRawMode: vi.fn(),
+});
+
+// Custom click threshold
+const mouse5 = new Mouse({
+  clickDistanceThreshold: 0,
+});
+
+// All options combined
+const mouse6 = new Mouse({
+  emitter: myEventEmitter,
+  inputStream: myInputStream,
+  outputStream: myOutputStream,
+  setRawMode: myCustomSetRawMode,
+  clickDistanceThreshold: 5,
+});
+```
+
+#### Testing with Mocked Dependencies
+
+The dependency injection pattern makes it easy to test with mocked streams and functions:
+
+```typescript
+import { Mouse } from 'xterm-mouse';
+import { vi } from 'vitest';
+
+// Mock setRawMode for testing
+const mockSetRawMode = vi.fn();
+
+const mouse = new Mouse({
+  inputStream: mockInputStream,
+  setRawMode: mockSetRawMode,
+});
+
+mouse.enable();
+
+expect(mockSetRawMode).toHaveBeenCalledWith(true);
+```
+
+### Migration Guide (Breaking Change)
+
+**⚠️ Constructor signature changed in v0.8.0:**
+
+**Before:**
+
+```typescript
+const mouse = new Mouse(inputStream, outputStream, emitter, {
+  clickDistanceThreshold: 5,
+});
+```
+
+**After:**
+
+```typescript
+const mouse = new Mouse({
+  clickDistanceThreshold: 5,
+});
+// Streams and emitter default to standard values
+```
+
+**Or with explicit configuration:**
+
+```typescript
+const mouse = new Mouse({
+  inputStream: process.stdin,
+  outputStream: process.stdout,
+  emitter: myEventEmitter,
+  clickDistanceThreshold: 5,
 });
 ```
 
@@ -697,6 +806,7 @@ This library is currently in its early stages of development. While efforts are 
 * **`pnpm run dev:streaming`**: Runs the streaming example with hot-reloading.
 * **`pnpm run dev:custom-threshold`**: Runs the custom threshold example with hot-reloading.
 * **`pnpm run dev:pause-resume`**: Runs the pause/resume example with hot-reloading.
+* **`pnpm run dev:custom-streams`**: Demonstrates dependency injection with custom streams.
 * **`pnpm run dev:interactive-buttons`**: Runs the interactive buttons demo.
 * **`pnpm run dev:interactive-menu`**: Runs the interactive menu demo.
 * **`pnpm run dev:interactive-grid`**: Runs the interactive grid demo.

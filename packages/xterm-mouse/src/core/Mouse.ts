@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { ListenerFor, MouseEvent, MouseEventAction, MouseOptions, ReadableStreamWithEncoding } from '../types';
+import type { ListenerFor, MouseEvent, MouseEventAction, MouseOptions } from '../types';
 import { EventStreamFactory } from './EventStreamFactory';
 import { MouseConvenienceMethods } from './MouseConvenienceMethods';
 import { MouseEventManager } from './MouseEventManager';
@@ -43,42 +43,60 @@ class Mouse {
 
   /**
    * Constructs a new Mouse instance.
-   * @param inputStream The readable stream to listen for mouse events on (defaults to process.stdin).
-   * @param outputStream The writable stream to send control sequences to (defaults to process.stdout).
-   * @param emitter The event emitter to use for emitting mouse events (defaults to a new EventEmitter).
-   * @param options Optional configuration options for mouse behavior.
-   * @param options.clickDistanceThreshold Maximum allowed distance (in cells) between press and release
-   * to qualify as a click. Defaults to 1, meaning press and release must be within 1 cell in both
-   * X and Y directions. Set to 0 to require exact same position, or higher values to allow more movement.
+   * @param options Optional configuration options for mouse behavior and dependencies.
+   * @param options.emitter The event emitter to use for emitting mouse events (defaults to a new EventEmitter).
+   * @param options.inputStream The readable stream to listen for mouse events on (defaults to process.stdin).
+   * @param options.outputStream The writable stream to send control sequences to (defaults to process.stdout).
+   * @param options.setRawMode Custom function to set raw mode (defaults to inputStream.setRawMode).
+   * @param options.clickDistanceThreshold Maximum allowed distance for click detection.
    *
    * @example
    * ```ts
-   * // Create a Mouse instance with default settings
+   * // Default configuration
    * const mouse = new Mouse();
    *
-   * // Create a Mouse instance with a custom click distance threshold
-   * const sensitiveMouse = new Mouse(process.stdin, process.stdout, new EventEmitter(), {
-   *   clickDistanceThreshold: 0, // Require exact position for clicks
+   * // Custom streams
+   * const mouse2 = new Mouse({
+   *   inputStream: customStdin,
+   *   outputStream: customStdout,
    * });
    *
-   * // Create a Mouse instance with a more lenient click threshold
-   * const lenientMouse = new Mouse(process.stdin, process.stdout, new EventEmitter(), {
-   *   clickDistanceThreshold: 5, // Allow up to 5 cells of movement
+   * // Custom emitter
+   * const mouse3 = new Mouse({
+   *   emitter: myEventEmitter,
+   * });
+   *
+   * // Testing with mock setRawMode
+   * const mockSetRawMode = vi.fn();
+   * const mouse4 = new Mouse({ setRawMode: mockSetRawMode });
+   *
+   * // Custom click threshold
+   * const mouse5 = new Mouse({ clickDistanceThreshold: 0 });
+   *
+   * // All options combined
+   * const mouse6 = new Mouse({
+   *   emitter: myEventEmitter,
+   *   inputStream: customStdin,
+   *   outputStream: customStdout,
+   *   setRawMode: mockSetRawMode,
+   *   clickDistanceThreshold: 5,
    * });
    * ```
    */
-  constructor(
-    inputStream: ReadableStreamWithEncoding = process.stdin,
-    outputStream: NodeJS.WriteStream = process.stdout,
-    emitter: EventEmitter = new EventEmitter(),
-    options?: MouseOptions,
-  ) {
-    // Create event manager first (needed by TTYController for handleEvent)
-    this.eventManager = new MouseEventManager(emitter, options);
+  constructor(options?: MouseOptions) {
+    const inputStream = options?.inputStream ?? process.stdin;
+    const outputStream = options?.outputStream ?? process.stdout;
+    const eventEmitter = options?.emitter ?? new EventEmitter();
 
-    // Create TTY controller with event handler
-    this.tty = new TTYController(inputStream, outputStream, (data: Buffer) =>
-      this.eventManager.handleEvent(data, this.tty.isPaused()),
+    // Create event manager first (needed by TTYController for handleEvent)
+    this.eventManager = new MouseEventManager(eventEmitter, options);
+
+    // Create TTY controller with event handler and custom setRawMode
+    this.tty = new TTYController(
+      inputStream,
+      outputStream,
+      (data: Buffer) => this.eventManager.handleEvent(data, this.tty.isPaused()),
+      options?.setRawMode,
     );
 
     // Create stream factory and convenience methods
@@ -131,8 +149,9 @@ class Mouse {
    * - Checking custom streams
    * - Providing user-friendly error messages
    *
-   * @param inputStream The input stream to check (defaults to process.stdin)
-   * @param outputStream The output stream to check (defaults to process.stdout)
+   * @param options Optional configuration with custom streams to check
+   * @param options.inputStream The input stream to check (defaults to process.stdin)
+   * @param options.outputStream The output stream to check (defaults to process.stdout)
    * @returns A result from SupportCheckResult indicating support status
    *
    * @example
@@ -148,11 +167,20 @@ class Mouse {
    *   console.error('Output is not a terminal');
    * }
    * ```
+   *
+   * @example
+   * ```ts
+   * // Check custom streams
+   * const result = Mouse.checkSupport({
+   *   inputStream: myCustomStdin,
+   *   outputStream: myCustomStdout,
+   * });
+   * ```
    */
-  static checkSupport(
-    inputStream: ReadableStreamWithEncoding = process.stdin,
-    outputStream: NodeJS.WriteStream = process.stdout,
-  ): string {
+  static checkSupport(options?: Pick<MouseOptions, 'inputStream' | 'outputStream'>): string {
+    const inputStream = options?.inputStream ?? process.stdin;
+    const outputStream = options?.outputStream ?? process.stdout;
+
     if (!inputStream.isTTY) {
       return Mouse.SupportCheckResult.NotTTY;
     }

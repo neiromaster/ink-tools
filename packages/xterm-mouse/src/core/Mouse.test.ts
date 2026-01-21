@@ -63,7 +63,7 @@ test('Mouse should be instantiable', () => {
 
 test('Mouse enable/disable should work', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
 
   // Act
   mouse.enable();
@@ -81,7 +81,7 @@ test('Mouse enable/disable should work', () => {
 test('Mouse should emit press event', async () => {
   // Arrange
   const emitter = new EventEmitter();
-  const mouse = new Mouse(makeFakeTTYStream(), process.stdout, emitter);
+  const mouse = new Mouse({ emitter, inputStream: makeFakeTTYStream(), outputStream: process.stdout });
 
   // Act
   const pressPromise = new Promise<void>((resolve) => {
@@ -104,7 +104,7 @@ test('Mouse should emit press event', async () => {
 test('Mouse should handle data events', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
 
   const eventPromise = new Promise<void>((resolve) => {
@@ -130,7 +130,7 @@ test('Mouse should handle data events', async () => {
 
 test('Mouse should be destroyed', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
   mouse.enable();
 
   // Act
@@ -143,7 +143,7 @@ test('Mouse should be destroyed', () => {
 test('Mouse eventsOf should yield mouse events', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const iterator = mouse.eventsOf('press');
 
@@ -170,7 +170,7 @@ test('Mouse eventsOf should yield mouse events', async () => {
 test('Mouse stream should yield mouse events', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const iterator = mouse.stream();
 
@@ -215,7 +215,7 @@ test('Mouse handleEvent should emit error when event emission fails', async () =
     return originalEmit(event, ...args);
   };
 
-  const mouse = new Mouse(stream, process.stdout, mockEmitter);
+  const mouse = new Mouse({ emitter: mockEmitter, inputStream: stream, outputStream: process.stdout });
 
   // Listen for the error event that should be emitted from the catch block
   const errorPromise = new Promise<void>((resolve) => {
@@ -241,7 +241,7 @@ test('Mouse enable should throw error when inputStream is not TTY', () => {
   const nonTTYStream = new EventEmitter() as ReadableStreamWithEncoding;
   nonTTYStream.isTTY = false; // Explicitly set isTTY to false
 
-  const mouse = new Mouse(nonTTYStream);
+  const mouse = new Mouse({ inputStream: nonTTYStream });
 
   // Act & Assert: enable should throw an error
   expect(() => {
@@ -266,7 +266,7 @@ test('Mouse enable should handle errors during setup from outputStream.write', (
     uncork: () => {},
   } as NodeJS.WriteStream;
 
-  const mouse = new Mouse(stream, mockOutputStream);
+  const mouse = new Mouse({ inputStream: stream, outputStream: mockOutputStream });
 
   // Act & Assert: enable should throw an error when setup fails
   expect(() => {
@@ -287,7 +287,7 @@ test('Mouse enable should handle errors during setup from setRawMode', () => {
     throw new Error('setRawMode failed');
   };
 
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
 
   // Act & Assert: enable should throw an error when setRawMode fails
   expect(() => {
@@ -315,7 +315,7 @@ test('Mouse.disable() should throw MouseError when an error occurs', () => {
     },
   } as NodeJS.WriteStream;
 
-  const mouse = new Mouse(stream, mockOutputStream);
+  const mouse = new Mouse({ inputStream: stream, outputStream: mockOutputStream });
 
   mouse.enable();
 
@@ -328,7 +328,7 @@ test('Mouse.disable() should throw MouseError when an error occurs', () => {
 test('Mouse eventsOf should use queue when multiple events arrive', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.eventsOf('press', { maxQueue: 5 }); // Use small max queue for testing
 
   mouse.enable();
@@ -368,7 +368,7 @@ test('Mouse eventsOf should use queue when multiple events arrive', async () => 
 test('Mouse eventsOf should use latestOnly option', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.eventsOf('press', { latestOnly: true }); // Use latestOnly option
 
   mouse.enable();
@@ -402,7 +402,7 @@ test('Mouse eventsOf should use latestOnly option', async () => {
 test('Mouse eventsOf should handle queue overflow', async () => {
   // Arrange - Use a small queue size to test overflow behavior
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.eventsOf('press', { maxQueue: 2 }); // Small max queue
 
   mouse.enable();
@@ -439,7 +439,7 @@ test('Mouse eventsOf should handle queue overflow', async () => {
 test('Mouse stream should use latestOnly option', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.stream({ latestOnly: true }); // Use latestOnly option
 
   mouse.enable();
@@ -482,7 +482,7 @@ test('Mouse.disable() should throw MouseError when an error occurs', () => {
       return true;
     },
   } as NodeJS.WriteStream;
-  const mouse = new Mouse(stream, mockOutputStream);
+  const mouse = new Mouse({ inputStream: stream, outputStream: mockOutputStream });
   mouse.enable();
 
   // Act & Assert
@@ -494,7 +494,7 @@ test('Mouse.disable() should throw MouseError when an error occurs', () => {
 test('Mouse.eventsOf() should handle errors', async () => {
   // Arrange
   const emitter = new EventEmitter();
-  const mouse = new Mouse(makeFakeTTYStream(), process.stdout, emitter);
+  const mouse = new Mouse({ emitter, inputStream: makeFakeTTYStream(), outputStream: process.stdout });
   const iterator = mouse.eventsOf('press');
   const error = new Error('Test error');
 
@@ -513,7 +513,7 @@ test('Mouse.eventsOf() should handle errors', async () => {
 test('Mouse should emit click event', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;10;20m';
 
@@ -542,7 +542,7 @@ test('Mouse should emit click event', async () => {
 test('Mouse should not emit click event if distance is too large', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;15;25m';
 
@@ -566,7 +566,7 @@ describe('Mouse.once()', () => {
   test('should call listener only once', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const listenerSpy = vi.fn(() => {});
 
     // Act
@@ -591,7 +591,7 @@ describe('Mouse.once()', () => {
   test('should remove listener after first invocation', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const listenerSpy = vi.fn(() => {});
 
     // Act
@@ -614,7 +614,7 @@ describe('Mouse.once()', () => {
   test('should provide correct type inference for wheel event', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const listenerSpy = vi.fn((event: MouseEvent) => {
       // Assert - event.button should be a wheel button type
       expect(['wheel-up', 'wheel-down', 'wheel-left', 'wheel-right']).toContain(event.button);
@@ -638,7 +638,7 @@ describe('Mouse.once()', () => {
   test('should provide correct type inference for move event', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const listenerSpy = vi.fn((event: MouseEvent) => {
       // Assert - event.button should be 'none' for move events
       expect(event.button).toBe('none');
@@ -662,7 +662,7 @@ describe('Mouse.once()', () => {
   test('should handle error events', async () => {
     // Arrange
     const emitter = new EventEmitter();
-    const mouse = new Mouse(makeFakeTTYStream(), process.stdout, emitter);
+    const mouse = new Mouse({ emitter, inputStream: makeFakeTTYStream(), outputStream: process.stdout });
     const errorSpy = vi.fn(() => {});
     const testError = new Error('Test error');
 
@@ -694,7 +694,7 @@ describe('Mouse.once()', () => {
   test('should not interfere with other listeners', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const onceSpy = vi.fn(() => {});
     const onSpy = vi.fn(() => {});
 
@@ -721,7 +721,7 @@ describe('Mouse.once()', () => {
 test('Mouse.stream() should handle errors', async () => {
   // Arrange
   const emitter = new EventEmitter();
-  const mouse = new Mouse(makeFakeTTYStream(), process.stdout, emitter);
+  const mouse = new Mouse({ emitter, inputStream: makeFakeTTYStream(), outputStream: process.stdout });
   const iterator = mouse.stream();
   const error = new Error('Test error');
 
@@ -739,7 +739,7 @@ test('Mouse.stream() should handle errors', async () => {
 
 test('Mouse.eventsOf() should be cancellable with AbortSignal', async () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
   const controller = new AbortController();
   const iterator = mouse.eventsOf('press', { signal: controller.signal });
 
@@ -761,7 +761,7 @@ test('Mouse.eventsOf() should be cancellable with AbortSignal', async () => {
 test('Mouse.stream() should handle high event volume without significant delay', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.stream();
   const eventCount = 10_000;
   const timeThreshold = 1000; // Increased to 1s, as the test is now more realistic
@@ -811,7 +811,7 @@ test('Mouse.stream() should handle high event volume without significant delay',
 
 test('Mouse.stream() should be cancellable with AbortSignal', async () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
   const controller = new AbortController();
   const iterator = mouse.stream({ signal: controller.signal });
 
@@ -832,7 +832,7 @@ test('Mouse.stream() should be cancellable with AbortSignal', async () => {
 
 test('Mouse.pause() should set paused state', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
 
   // Act
   mouse.pause();
@@ -846,7 +846,7 @@ test('Mouse.pause() should set paused state', () => {
 
 test('Mouse.resume() should clear paused state', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
   mouse.pause();
 
   // Act
@@ -861,7 +861,7 @@ test('Mouse.resume() should clear paused state', () => {
 
 test('Mouse.isPaused() should report correct state', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
 
   // Assert initial state
   expect(mouse.isPaused()).toBe(false);
@@ -884,7 +884,7 @@ test('Mouse.isPaused() should report correct state', () => {
 
 test('Mouse.pause() should be idempotent', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
 
   // Act - call pause twice
   mouse.pause();
@@ -899,7 +899,7 @@ test('Mouse.pause() should be idempotent', () => {
 
 test('Mouse.resume() should be idempotent', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
   mouse.pause();
 
   // Act - call resume twice
@@ -915,7 +915,7 @@ test('Mouse.resume() should be idempotent', () => {
 
 test('Mouse.pause()/resume() should work without enable', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
 
   // Act & Assert - pause/resume should work even when not enabled
   expect(mouse.isEnabled()).toBe(false);
@@ -936,7 +936,7 @@ test('Mouse.pause()/resume() should work without enable', () => {
 test('Mouse should not emit press events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const pressSpy = vi.fn(() => {});
 
@@ -978,7 +978,7 @@ test('Mouse should not emit press events when paused', async () => {
 test('Mouse should not emit release events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const releaseEvent = '\x1b[<0;10;20m';
   const releaseSpy = vi.fn(() => {});
 
@@ -1020,7 +1020,7 @@ test('Mouse should not emit release events when paused', async () => {
 test('Mouse should not emit drag events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const dragEvent = '\x1b[<32;15;25M'; // Button 32 = left button with motion bit
   const dragSpy = vi.fn(() => {});
 
@@ -1062,7 +1062,7 @@ test('Mouse should not emit drag events when paused', async () => {
 test('Mouse should not emit wheel events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const wheelEvent = '\x1b[<64;10;20M'; // Button 64 = wheel up
   const wheelSpy = vi.fn(() => {});
 
@@ -1104,7 +1104,7 @@ test('Mouse should not emit wheel events when paused', async () => {
 test('Mouse should not emit move events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const moveEvent = '\x1b[<35;10;20M'; // Button 35 = button 3 with motion bit (move)
   const moveSpy = vi.fn(() => {});
 
@@ -1146,7 +1146,7 @@ test('Mouse should not emit move events when paused', async () => {
 test('Mouse should not emit click events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;10;20m';
   const clickSpy = vi.fn(() => {});
@@ -1191,7 +1191,7 @@ test('Mouse should not emit click events when paused', async () => {
 test('Mouse should block all event types when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
 
   const pressSpy = vi.fn(() => {});
   const releaseSpy = vi.fn(() => {});
@@ -1259,7 +1259,7 @@ test('Mouse.pause()/resume() should not make terminal mode changes', () => {
 
   stream.setRawMode = setRawModeSpy as never;
 
-  const mouse = new Mouse(stream, mockOutputStream);
+  const mouse = new Mouse({ inputStream: stream, outputStream: mockOutputStream });
 
   // Act - call pause() without enabling
   mouse.pause();
@@ -1295,7 +1295,7 @@ test('Mouse.pause()/resume() should not interfere with enable/disable', () => {
 
   stream.setRawMode = setRawModeSpy as never;
 
-  const mouse = new Mouse(stream, mockOutputStream);
+  const mouse = new Mouse({ inputStream: stream, outputStream: mockOutputStream });
 
   // Act - pause before enable
   mouse.pause();
@@ -1335,7 +1335,7 @@ test('Mouse.pause()/resume() should not interfere with enable/disable', () => {
 test('Mouse.eventsOf() should not yield events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const iterator = mouse.eventsOf('press');
 
@@ -1389,7 +1389,7 @@ test('Mouse.eventsOf() should not yield events when paused', async () => {
 test('Mouse.eventsOf() should queue and yield events after resume', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.eventsOf('press');
 
   try {
@@ -1435,7 +1435,7 @@ test('Mouse.eventsOf() should queue and yield events after resume', async () => 
 test('Mouse.stream() should not yield events when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const iterator = mouse.stream();
 
@@ -1489,7 +1489,7 @@ test('Mouse.stream() should not yield events when paused', async () => {
 test('Mouse.stream() should not yield events of any type when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.stream();
 
   try {
@@ -1544,7 +1544,7 @@ test('Mouse.stream() should not yield events of any type when paused', async () 
 test('Mouse.eventsOf() with latestOnly should not update when paused', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.eventsOf('press', { latestOnly: true });
 
   try {
@@ -1587,7 +1587,7 @@ test('Mouse.eventsOf() with latestOnly should not update when paused', async () 
 test('Mouse.pause() then disable() should preserve paused state', () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
 
   // Act - enable, then pause, then disable
   mouse.enable();
@@ -1612,7 +1612,7 @@ test('Mouse.pause() then disable() should preserve paused state', () => {
 test('Mouse.disable() then pause() should set paused state independently', () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
 
   // Act - enable, then disable, then pause
   mouse.enable();
@@ -1646,7 +1646,7 @@ test('Mouse.resume() while disabled should not make terminal changes', () => {
 
   stream.setRawMode = setRawModeSpy as never;
 
-  const mouse = new Mouse(stream, mockOutputStream);
+  const mouse = new Mouse({ inputStream: stream, outputStream: mockOutputStream });
 
   // Act - enable, pause, disable, then resume while disabled
   mouse.enable();
@@ -1672,7 +1672,7 @@ test('Mouse.resume() while disabled should not make terminal changes', () => {
 test('Mouse.enable() while paused should preserve paused state', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const pressSpy = vi.fn(() => {});
 
@@ -1712,7 +1712,7 @@ test('Mouse.enable() while paused should preserve paused state', async () => {
 test('Mouse should handle full cycle: pause → disable → enable → resume', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const pressSpy = vi.fn(() => {});
 
@@ -1756,7 +1756,7 @@ test('Mouse should handle full cycle: pause → disable → enable → resume', 
 test('Mouse should handle reverse cycle: disable → pause → enable → resume', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const pressSpy = vi.fn(() => {});
 
@@ -1800,7 +1800,7 @@ test('Mouse should handle reverse cycle: disable → pause → enable → resume
 test('Mouse should handle multiple pause/resume cycles with enable/disable', () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const pressSpy = vi.fn(() => {});
 
@@ -1844,7 +1844,7 @@ test('Mouse should handle multiple pause/resume cycles with enable/disable', () 
 test('Mouse eventsOf should handle pause → disable → enable → resume cycle', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const iterator = mouse.eventsOf('press');
 
   try {
@@ -1884,7 +1884,7 @@ test('Mouse eventsOf should handle pause → disable → enable → resume cycle
 
 test('Mouse.isPaused() and isEnabled() should remain independent through all transitions', () => {
   // Arrange
-  const mouse = new Mouse(makeFakeTTYStream());
+  const mouse = new Mouse({ inputStream: makeFakeTTYStream() });
 
   // Test all state combinations to ensure independence
   const testStates = [
@@ -1911,7 +1911,7 @@ test('Mouse.isPaused() and isEnabled() should remain independent through all tra
 test('Mouse default threshold should emit click when press and release at same position', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;10;20m';
 
@@ -1940,7 +1940,7 @@ test('Mouse default threshold should emit click when press and release at same p
 test('Mouse default threshold should emit click when distance is exactly 1 cell', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;11;21m'; // xDiff=1, yDiff=1 (at threshold boundary)
 
@@ -1969,7 +1969,7 @@ test('Mouse default threshold should emit click when distance is exactly 1 cell'
 test('Mouse default threshold should not emit click when distance exceeds 1 cell', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;12;22m'; // xDiff=2, yDiff=2 (beyond threshold)
 
@@ -1992,7 +1992,7 @@ test('Mouse default threshold should not emit click when distance exceeds 1 cell
 test('Mouse default threshold should not emit click when only X distance exceeds 1', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;12;20m'; // xDiff=2, yDiff=0 (X exceeds threshold)
 
@@ -2015,7 +2015,7 @@ test('Mouse default threshold should not emit click when only X distance exceeds
 test('Mouse default threshold should not emit click when only Y distance exceeds 1', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   const pressEvent = '\x1b[<0;10;20M';
   const releaseEvent = '\x1b[<0;10;22m'; // xDiff=0, yDiff=2 (Y exceeds threshold)
 
@@ -2039,7 +2039,7 @@ test('Mouse default threshold should maintain backward compatibility with hardco
   // Arrange - This test verifies that the default threshold of 1
   // maintains the same behavior as the previous hardcoded implementation
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
 
   // Test case 1: Same position (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2089,7 +2089,7 @@ test('Mouse default threshold should maintain backward compatibility with hardco
 test('Mouse with threshold 0 should only emit click when press and release at exact same position', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 0 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 0 });
 
   // Act & Assert - Test exact position (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2122,7 +2122,7 @@ test('Mouse with threshold 0 should only emit click when press and release at ex
 test('Mouse with threshold 2 should emit click when distance is within 2 cells', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 2 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 2 });
 
   // Act & Assert - Test distance of 2 (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2155,7 +2155,7 @@ test('Mouse with threshold 2 should emit click when distance is within 2 cells',
 test('Mouse with threshold 5 should emit click when distance is within 5 cells', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 5 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 5 });
 
   // Act & Assert - Test distance of 5 (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2188,7 +2188,7 @@ test('Mouse with threshold 5 should emit click when distance is within 5 cells',
 test('Mouse with threshold 10 should emit click when distance is within 10 cells', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 10 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 10 });
 
   // Act & Assert - Test distance of 10 (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2221,7 +2221,7 @@ test('Mouse with threshold 10 should emit click when distance is within 10 cells
 test('Mouse with threshold 0 should require exact same position - all edge cases', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 0 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 0 });
 
   mouse.enable();
 
@@ -2310,7 +2310,7 @@ test('Mouse with threshold 0 should require exact same position - all edge cases
 test('Mouse with threshold 50 should emit click when distance is within 50 cells', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 50 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 50 });
 
   // Act & Assert - Test distance of 50 (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2343,7 +2343,7 @@ test('Mouse with threshold 50 should emit click when distance is within 50 cells
 test('Mouse with threshold 100 should emit click when distance is within 100 cells', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 100 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 100 });
 
   // Act & Assert - Test distance of 100 (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2376,7 +2376,7 @@ test('Mouse with threshold 100 should emit click when distance is within 100 cel
 test('Mouse with threshold 500 should emit click when distance is within 500 cells', async () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream, undefined, undefined, { clickDistanceThreshold: 500 });
+  const mouse = new Mouse({ inputStream: stream, clickDistanceThreshold: 500 });
 
   // Act & Assert - Test distance of 500 (should click)
   const click1Promise = new Promise<void>((resolve) => {
@@ -2437,7 +2437,7 @@ test('Mouse should handle garbage collection cleanup', async () => {
 
   // Act: Create Mouse instance, enable it, then lose reference
   {
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     mouse.enable();
     expect(attachCount).toBe(1);
     expect(detachCount).toBe(0);
@@ -2483,7 +2483,7 @@ test('Mouse should handle GC correctly when explicitly disabled before collectio
 
   // Act: Create Mouse instance, enable, then explicitly disable
   {
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     mouse.enable();
     mouse.disable();
     expect(attachSpy).toHaveBeenCalled();
@@ -2505,7 +2505,7 @@ test('Mouse should handle GC correctly when explicitly disabled before collectio
 test('Mouse.disable() should be idempotent and safe to call multiple times', () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
 
   // Act: Enable and disable multiple times
   mouse.enable();
@@ -2542,7 +2542,7 @@ test('Mouse should handle multiple enable/disable cycles with FinalizationRegist
   }) as typeof stream.off;
 
   // Act: Multiple enable/disable cycles
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   mouse.enable();
   mouse.disable();
   mouse.enable();
@@ -2571,7 +2571,7 @@ test('Mouse should handle multiple enable/disable cycles with FinalizationRegist
 test('Mouse.disable() when not enabled should be safe', () => {
   // Arrange
   const stream = makeFakeTTYStream();
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
 
   // Act & Assert: Disable without ever enabling should not throw
   mouse.disable();
@@ -2607,9 +2607,9 @@ test('Multiple Mouse instances should be garbage collected independently', async
   // Act: Create multiple Mouse instances, enable each, lose all references
   const weakRefs: WeakRef<Mouse>[] = [];
   {
-    const mouse1 = new Mouse(stream);
-    const mouse2 = new Mouse(stream);
-    const mouse3 = new Mouse(stream);
+    const mouse1 = new Mouse({ inputStream: stream });
+    const mouse2 = new Mouse({ inputStream: stream });
+    const mouse3 = new Mouse({ inputStream: stream });
 
     weakRefs.push(new WeakRef(mouse1));
     weakRefs.push(new WeakRef(mouse2));
@@ -2670,7 +2670,7 @@ test('Mouse.destroy() should work correctly with FinalizationRegistry', async ()
   // Act: Create Mouse instance, enable, then explicitly destroy
   const weakRef: WeakRef<Mouse> = new WeakRef(
     (() => {
-      const mouse = new Mouse(stream);
+      const mouse = new Mouse({ inputStream: stream });
       mouse.enable();
       mouse.destroy();
       return mouse;
@@ -2713,7 +2713,7 @@ test('Mouse.destroy() should be idempotent with FinalizationRegistry', async () 
   }) as typeof stream.off;
 
   // Act: Create Mouse instance, enable, then destroy multiple times
-  const mouse = new Mouse(stream);
+  const mouse = new Mouse({ inputStream: stream });
   mouse.enable();
   mouse.destroy();
   mouse.destroy();
@@ -2791,7 +2791,7 @@ describe('Mouse.checkSupport()', () => {
     } as unknown as NodeJS.WriteStream;
 
     // Act
-    const result = Mouse.checkSupport(inputStream, outputStream);
+    const result = Mouse.checkSupport({ inputStream, outputStream });
 
     // Assert
     expect(result).toBe(Mouse.SupportCheckResult.Supported);
@@ -2807,7 +2807,7 @@ describe('Mouse.checkSupport()', () => {
     } as unknown as NodeJS.WriteStream;
 
     // Act
-    const result = Mouse.checkSupport(inputStream, outputStream);
+    const result = Mouse.checkSupport({ inputStream, outputStream });
 
     // Assert
     expect(result).toBe(Mouse.SupportCheckResult.NotTTY);
@@ -2823,10 +2823,116 @@ describe('Mouse.checkSupport()', () => {
     } as unknown as NodeJS.WriteStream;
 
     // Act
-    const result = Mouse.checkSupport(inputStream, outputStream);
+    const result = Mouse.checkSupport({ inputStream, outputStream });
 
     // Assert
     expect(result).toBe(Mouse.SupportCheckResult.OutputNotTTY);
+  });
+
+  test('should use defaults when options not provided', () => {
+    // Act
+    const result = Mouse.checkSupport();
+
+    // Assert - should work without errors
+    expect(typeof result).toBe('string');
+  });
+});
+
+describe('dependency injection via options', () => {
+  test('uses default streams when options not provided', () => {
+    // Arrange & Act
+    const mouse = new Mouse();
+
+    // Assert
+    expect(mouse).toBeInstanceOf(Mouse);
+    mouse.destroy();
+  });
+
+  test('uses custom streams from options', () => {
+    // Arrange
+    const customIn = makeFakeTTYStream();
+    const customOut = process.stdout;
+
+    // Act
+    const mouse = new Mouse({
+      inputStream: customIn,
+      outputStream: customOut,
+    });
+
+    // Assert
+    expect(mouse).toBeInstanceOf(Mouse);
+    mouse.enable();
+    expect(mouse.isEnabled()).toBe(true);
+    mouse.destroy();
+  });
+
+  test('passes setRawMode from options to TTYController', () => {
+    // Arrange
+    const customSetRawMode = vi.fn();
+    const stream = makeFakeTTYStream();
+
+    // Act
+    const mouse = new Mouse({
+      inputStream: stream,
+      setRawMode: customSetRawMode,
+    });
+    mouse.enable();
+
+    // Assert
+    expect(customSetRawMode).toHaveBeenCalledWith(true);
+    mouse.destroy();
+  });
+
+  test('uses default setRawMode when not provided in options', () => {
+    // Arrange
+    const stream = makeFakeTTYStream();
+    const originalSetRawMode = stream.setRawMode.bind(stream);
+    const setRawModeSpy = vi.fn(originalSetRawMode);
+    stream.setRawMode = setRawModeSpy;
+
+    // Act
+    const mouse = new Mouse({
+      inputStream: stream,
+    });
+    mouse.enable();
+
+    // Assert
+    expect(setRawModeSpy).toHaveBeenCalledWith(true);
+    mouse.destroy();
+  });
+
+  test('combines multiple options correctly', () => {
+    // Arrange
+    const customSetRawMode = vi.fn();
+    const stream = makeFakeTTYStream();
+
+    // Act
+    const mouse = new Mouse({
+      inputStream: stream,
+      outputStream: process.stdout,
+      setRawMode: customSetRawMode,
+      clickDistanceThreshold: 5,
+    });
+    mouse.enable();
+
+    // Assert
+    expect(customSetRawMode).toHaveBeenCalledWith(true);
+    expect(mouse.isEnabled()).toBe(true);
+    mouse.destroy();
+  });
+
+  test('uses custom emitter from options', () => {
+    // Arrange
+    const customEmitter = new EventEmitter();
+
+    // Act
+    const mouse = new Mouse({
+      emitter: customEmitter,
+    });
+
+    // Assert
+    expect(mouse).toBeInstanceOf(Mouse);
+    mouse.destroy();
   });
 });
 
@@ -2834,7 +2940,7 @@ describe('Mouse.waitForClick()', () => {
   test('should resolve when click event occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const pressEvent = '\x1b[<0;10;20M';
     const releaseEvent = '\x1b[<0;10;20m';
 
@@ -2861,7 +2967,7 @@ describe('Mouse.waitForClick()', () => {
   test('should timeout if no click occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
 
     mouse.enable();
 
@@ -2875,7 +2981,7 @@ describe('Mouse.waitForClick()', () => {
   test('should cancel with AbortSignal', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const controller = new AbortController();
 
     mouse.enable();
@@ -2894,7 +3000,7 @@ describe('Mouse.waitForClick()', () => {
   test('should cleanup listeners after resolution', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const pressEvent = '\x1b[<0;10;20M';
     const releaseEvent = '\x1b[<0;10;20m';
 
@@ -2926,7 +3032,7 @@ describe('Mouse.waitForInput()', () => {
   test('should resolve when press event occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const pressEvent = '\x1b[<0;10;20M';
 
     mouse.enable();
@@ -2949,7 +3055,7 @@ describe('Mouse.waitForInput()', () => {
   test('should resolve when move event occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;15;25M'; // button 35 = move
 
     mouse.enable();
@@ -2971,7 +3077,7 @@ describe('Mouse.waitForInput()', () => {
   test('should resolve when wheel event occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const wheelEvent = '\x1b[<64;10;20M'; // button 64 = wheel up
 
     mouse.enable();
@@ -2992,7 +3098,7 @@ describe('Mouse.waitForInput()', () => {
   test('should resolve when drag event occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const dragEvent = '\x1b[<32;15;25M'; // button 32 = left button drag
 
     mouse.enable();
@@ -3013,7 +3119,7 @@ describe('Mouse.waitForInput()', () => {
   test('should resolve when click event occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const pressEvent = '\x1b[<0;10;20M';
     const releaseEvent = '\x1b[<0;10;20m';
 
@@ -3035,7 +3141,7 @@ describe('Mouse.waitForInput()', () => {
   test('should timeout if no input occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
 
     mouse.enable();
 
@@ -3049,7 +3155,7 @@ describe('Mouse.waitForInput()', () => {
   test('should cancel with AbortSignal', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const controller = new AbortController();
 
     mouse.enable();
@@ -3068,7 +3174,7 @@ describe('Mouse.waitForInput()', () => {
   test('should cleanup listeners after resolution', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const pressEvent = '\x1b[<0;10;20M';
 
     mouse.enable();
@@ -3097,7 +3203,7 @@ describe('Mouse.getMousePosition()', () => {
   test('should resolve when mouse move occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;42;58M'; // move to x=42, y=58
 
     mouse.enable();
@@ -3118,7 +3224,7 @@ describe('Mouse.getMousePosition()', () => {
   test('should return correct coordinates for multiple moves', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent1 = '\x1b[<35;10;20M';
     const moveEvent2 = '\x1b[<35;30;40M';
 
@@ -3149,7 +3255,7 @@ describe('Mouse.getMousePosition()', () => {
   test('should timeout if no mouse move occurs', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
 
     mouse.enable();
 
@@ -3163,7 +3269,7 @@ describe('Mouse.getMousePosition()', () => {
   test('should cancel with AbortSignal', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const controller = new AbortController();
 
     mouse.enable();
@@ -3182,7 +3288,7 @@ describe('Mouse.getMousePosition()', () => {
   test('should cleanup listeners after resolution', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;10;20M';
 
     mouse.enable();
@@ -3209,7 +3315,7 @@ describe('Mouse.getMousePosition()', () => {
   test('should ignore non-move events', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const pressEvent = '\x1b[<0;10;20M';
     const moveEvent = '\x1b[<35;42;58M';
 
@@ -3238,7 +3344,7 @@ describe('Mouse.getMousePosition()', () => {
     test('should return null before any mouse movement', () => {
       // Arrange
       const stream = makeFakeTTYStream();
-      const mouse = new Mouse(stream);
+      const mouse = new Mouse({ inputStream: stream });
 
       mouse.enable();
 
@@ -3253,7 +3359,7 @@ describe('Mouse.getMousePosition()', () => {
     test('should return cached position after mouse move', async () => {
       // Arrange
       const stream = makeFakeTTYStream();
-      const mouse = new Mouse(stream);
+      const mouse = new Mouse({ inputStream: stream });
       const moveEvent = '\x1b[<35;15;25M';
 
       mouse.enable();
@@ -3277,7 +3383,7 @@ describe('Mouse.getMousePosition()', () => {
     test('should update position on multiple moves', async () => {
       // Arrange
       const stream = makeFakeTTYStream();
-      const mouse = new Mouse(stream);
+      const mouse = new Mouse({ inputStream: stream });
       const moveEvent1 = '\x1b[<35;10;20M';
       const moveEvent2 = '\x1b[<35;50;60M';
 
@@ -3306,7 +3412,7 @@ describe('Mouse.getMousePosition()', () => {
     test('should work with drag events', async () => {
       // Arrange
       const stream = makeFakeTTYStream();
-      const mouse = new Mouse(stream);
+      const mouse = new Mouse({ inputStream: stream });
       const dragEvent = '\x1b[<35;12;22M'; // Button 1 (left) drag
 
       mouse.enable();
@@ -3328,7 +3434,7 @@ describe('Mouse.getMousePosition()', () => {
     test('should return immediately without waiting', () => {
       // Arrange
       const stream = makeFakeTTYStream();
-      const mouse = new Mouse(stream);
+      const mouse = new Mouse({ inputStream: stream });
 
       mouse.enable();
 
@@ -3348,7 +3454,7 @@ describe('Mouse.getMousePosition()', () => {
     test('should persist across multiple calls', async () => {
       // Arrange
       const stream = makeFakeTTYStream();
-      const mouse = new Mouse(stream);
+      const mouse = new Mouse({ inputStream: stream });
       const moveEvent = '\x1b[<35;30;40M';
 
       mouse.enable();
@@ -3377,7 +3483,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should yield debounced move events', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;10;20M'; // move to x=10, y=20
     const iterator = mouse.debouncedMoveEvents({ interval: 50 });
 
@@ -3407,7 +3513,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should debounce rapid move events', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent1 = '\x1b[<35;10;20M';
     const moveEvent2 = '\x1b[<35;15;25M';
     const moveEvent3 = '\x1b[<35;20;30M';
@@ -3439,7 +3545,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should yield multiple events over time', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent1 = '\x1b[<35;10;20M';
     const moveEvent2 = '\x1b[<35;30;40M';
     const iterator = mouse.debouncedMoveEvents({ interval: 30 });
@@ -3472,7 +3578,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should be cancellable with AbortSignal', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const controller = new AbortController();
     const iterator = mouse.debouncedMoveEvents({ signal: controller.signal });
 
@@ -3494,7 +3600,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should cleanup on abort', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const controller = new AbortController();
     const iterator = mouse.debouncedMoveEvents({ signal: controller.signal, interval: 100 });
 
@@ -3520,7 +3626,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should handle errors', async () => {
     // Arrange
     const emitter = new EventEmitter();
-    const mouse = new Mouse(makeFakeTTYStream(), process.stdout, emitter);
+    const mouse = new Mouse({ emitter, inputStream: makeFakeTTYStream(), outputStream: process.stdout });
     const iterator = mouse.debouncedMoveEvents();
     const error = new Error('Test error');
 
@@ -3543,7 +3649,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should only yield move events', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;10;20M';
     const pressEvent = '\x1b[<0;15;25M';
     const iterator = mouse.debouncedMoveEvents({ interval: 30 });
@@ -3574,7 +3680,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should use default interval of 16ms', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;10;20M';
     const iterator = mouse.debouncedMoveEvents(); // Use default interval
 
@@ -3602,7 +3708,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should not yield when paused', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;10;20M';
     const iterator = mouse.debouncedMoveEvents({ interval: 30 });
 
@@ -3644,7 +3750,7 @@ describe('Mouse.debouncedMoveEvents()', () => {
   test('should cleanup timers on break', async () => {
     // Arrange
     const stream = makeFakeTTYStream();
-    const mouse = new Mouse(stream);
+    const mouse = new Mouse({ inputStream: stream });
     const moveEvent = '\x1b[<35;10;20M';
     const iterator = mouse.debouncedMoveEvents({ interval: 100 });
 

@@ -25,7 +25,7 @@ const options: MouseOptions = {
   clickDistanceThreshold: THRESHOLD,
 };
 
-const mouse: Mouse = new Mouse(process.stdin, process.stdout, undefined, options);
+const mouse: Mouse = new Mouse(options);
 
 console.log(`╔═══════════════════════════════════════════════════════════════╗`);
 console.log(`║   Custom Click Detection Threshold Example                    ║`);

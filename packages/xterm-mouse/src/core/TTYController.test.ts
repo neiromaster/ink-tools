@@ -492,4 +492,78 @@ describe('TTYController', () => {
       expect(true).toBe(true);
     });
   });
+
+  describe('custom setRawMode function', () => {
+    test('uses custom setRawMode when provided', () => {
+      // Arrange
+      const customSetRawMode = vi.fn();
+      const mockInputStream2 = new MockReadableStream();
+      const mockOutputStream2 = new MockWritableStream();
+      const handleEventSpy2 = vi.fn();
+
+      // Act
+      const controller2 = new TTYController(
+        mockInputStream2 as unknown as import('../types').ReadableStreamWithEncoding,
+        mockOutputStream2 as unknown as NodeJS.WriteStream,
+        handleEventSpy2,
+        customSetRawMode,
+      );
+      controller2.enable();
+
+      // Assert
+      expect(customSetRawMode).toHaveBeenCalledWith(true);
+      expect(mockInputStream2.isRaw).toBe(false); // Default setRawMode should NOT be called
+
+      // Cleanup
+      controller2.disable();
+      expect(customSetRawMode).toHaveBeenCalledWith(false);
+    });
+
+    test('uses default setRawMode when custom function not provided', () => {
+      // Arrange
+      const mockInputStream2 = new MockReadableStream();
+      const mockOutputStream2 = new MockWritableStream();
+      const handleEventSpy2 = vi.fn();
+
+      // Act
+      const controller2 = new TTYController(
+        mockInputStream2 as unknown as import('../types').ReadableStreamWithEncoding,
+        mockOutputStream2 as unknown as NodeJS.WriteStream,
+        handleEventSpy2,
+      );
+      controller2.enable();
+
+      // Assert
+      expect(mockInputStream2.isRaw).toBe(true); // Default setRawMode was called
+
+      // Cleanup
+      controller2.disable();
+      expect(mockInputStream2.isRaw).toBe(false); // Default setRawMode was called with false
+    });
+
+    test('passes custom setRawMode to FinalizationRegistry', () => {
+      // Arrange
+      const customSetRawMode = vi.fn();
+      const mockInputStream2 = new MockReadableStream();
+      const mockOutputStream2 = new MockWritableStream();
+      const handleEventSpy2 = vi.fn();
+
+      // Act
+      const controller2 = new TTYController(
+        mockInputStream2 as unknown as import('../types').ReadableStreamWithEncoding,
+        mockOutputStream2 as unknown as NodeJS.WriteStream,
+        handleEventSpy2,
+        customSetRawMode,
+      );
+      controller2.enable();
+
+      // Assert - enable should work
+      expect(controller2.isEnabled()).toBe(true);
+      expect(customSetRawMode).toHaveBeenCalledWith(true);
+
+      // Cleanup
+      controller2.destroy();
+      expect(customSetRawMode).toHaveBeenCalledWith(false);
+    });
+  });
 });
