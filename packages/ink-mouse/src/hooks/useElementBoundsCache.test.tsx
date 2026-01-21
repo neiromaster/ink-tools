@@ -96,9 +96,9 @@ describe('useElementBoundsCache', () => {
     expect(capturedCache).toBeDefined();
     const state = capturedCache!.getCachedState(ref);
 
-    // Assert
+    // Assert - hover state is separate from bounds cache
     expect(state).toBeDefined();
-    expect(state.isHovering).toBe(false);
+    expect(capturedCache!.hoverStateRef.current.get(ref)).toBeUndefined(); // No hover state yet
     expect(state.bounds).toBeDefined();
     expect(state.boundsTimestamp).toBeDefined();
   });
@@ -169,7 +169,7 @@ describe('useElementBoundsCache', () => {
     }
   });
 
-  test('preserves isHovering state when recalculating bounds', () => {
+  test('stores hover state independently of bounds cache', () => {
     // Arrange
     const mockElement = createMockDOMElement({ left: 10, top: 10, width: 50, height: 50 });
     const ref = { current: mockElement };
@@ -186,22 +186,24 @@ describe('useElementBoundsCache', () => {
       />,
     );
 
-    // First call - set isHovering to true
-    const state1 = capturedCache!.getCachedState(ref);
-    state1.isHovering = true;
-    capturedCache!.hoverStateRef.current.set(ref, state1);
+    // Set hover state independently
+    capturedCache!.hoverStateRef.current.set(ref, true);
 
-    // Fast forward and recalculate
+    // First call - get bounds
+    const state1 = capturedCache!.getCachedState(ref);
+    const timestamp1 = state1.boundsTimestamp;
+
+    // Fast forward and recalculate bounds
     vi.advanceTimersByTime(150);
 
     const state2 = capturedCache!.getCachedState(ref);
 
-    // Assert
-    expect(state2.isHovering).toBe(true);
+    // Assert - hover state should remain independent
+    expect(capturedCache!.hoverStateRef.current.get(ref)).toBe(true);
     expect(state2.boundsTimestamp).toBeDefined();
-    expect(state1.boundsTimestamp).toBeDefined();
-    if (state2.boundsTimestamp && state1.boundsTimestamp) {
-      expect(state2.boundsTimestamp).toBeGreaterThan(state1.boundsTimestamp);
+    expect(timestamp1).toBeDefined();
+    if (state2.boundsTimestamp && timestamp1) {
+      expect(state2.boundsTimestamp).toBeGreaterThan(timestamp1);
     }
   });
 
@@ -226,7 +228,7 @@ describe('useElementBoundsCache', () => {
 
     // Assert - should not throw and return valid state
     expect(state).toBeDefined();
-    expect(state.isHovering).toBe(false);
+    expect(capturedCache!.hoverStateRef.current.get(ref)).toBeUndefined();
   });
 
   test('handles undefined ref gracefully', () => {
@@ -250,7 +252,7 @@ describe('useElementBoundsCache', () => {
 
     // Assert - should not throw and return valid state
     expect(state).toBeDefined();
-    expect(state.isHovering).toBe(false);
+    expect(capturedCache!.hoverStateRef.current.get(ref)).toBeUndefined();
   });
 
   test('returns different state for different refs', () => {
@@ -282,7 +284,7 @@ describe('useElementBoundsCache', () => {
     expect(state1.bounds).not.toEqual(state2.bounds);
   });
 
-  test('initializes isHovering to false for new refs', () => {
+  test('initializes hover state to undefined for new refs', () => {
     // Arrange
     const mockElement = createMockDOMElement({ left: 10, top: 10, width: 50, height: 50 });
     const ref = { current: mockElement };
@@ -302,8 +304,9 @@ describe('useElementBoundsCache', () => {
     expect(capturedCache).toBeDefined();
     const state = capturedCache!.getCachedState(ref);
 
-    // Assert
-    expect(state.isHovering).toBe(false);
+    // Assert - hover state defaults to undefined (false when coerced)
+    expect(state).toBeDefined();
+    expect(capturedCache!.hoverStateRef.current.get(ref)).toBeUndefined();
   });
 
   test('works with zero cache invalidation (always recalculate)', () => {

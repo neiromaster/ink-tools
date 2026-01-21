@@ -3,7 +3,6 @@ import type { BoundingClientRect } from '../types';
 import { isPointInRect } from '../utils/geometry';
 
 type CachedElementState = {
-  isHovering: boolean;
   bounds?: BoundingClientRect;
   boundsTimestamp?: number;
 };
@@ -23,8 +22,8 @@ export type HandlerEntry = {
  * This is a plain function (not a hook) because handlers are registered once
  * with the Mouse instance and don't need to be reactive.
  *
- * @param getCachedState - Function to get cached element bounds
- * @param hoverStateRef - Ref to WeakMap storing hover state per element
+ * @param getCachedState - Function to get cached element bounds (geometry only)
+ * @param hoverStateRef - WeakMap storing boolean hover state per element
  * @param handlersRef - Ref to Map of registered handlers
  * @returns Object with event handler functions
  *
@@ -43,7 +42,7 @@ export type HandlerEntry = {
  */
 export function createMouseEventHandlers(
   getCachedState: (ref: React.RefObject<unknown>) => CachedElementState,
-  hoverStateRef: WeakMap<React.RefObject<unknown>, CachedElementState>,
+  hoverStateRef: WeakMap<React.RefObject<unknown>, boolean>,
   handlersRef: Map<string, HandlerEntry>,
 ): {
   handleClick: (event: XtermMouseEvent) => void;
@@ -89,25 +88,27 @@ export function createMouseEventHandlers(
           }
           break;
 
-        case 'mouseEnter':
-          if (isInside !== cached.isHovering) {
-            cached.isHovering = isInside;
-            hoverStateRef.set(entry.ref, cached);
+        case 'mouseEnter': {
+          const wasHoveringEnter = hoverStateRef.get(entry.ref) ?? false;
+          if (isInside !== wasHoveringEnter) {
+            hoverStateRef.set(entry.ref, isInside);
             if (isInside) {
               (entry.handler as (event: XtermMouseEvent) => void)(event);
             }
           }
           break;
+        }
 
-        case 'mouseLeave':
-          if (isInside !== cached.isHovering) {
-            cached.isHovering = isInside;
-            hoverStateRef.set(entry.ref, cached);
+        case 'mouseLeave': {
+          const wasHoveringLeave = hoverStateRef.get(entry.ref) ?? false;
+          if (isInside !== wasHoveringLeave) {
+            hoverStateRef.set(entry.ref, isInside);
             if (!isInside) {
               (entry.handler as (event: XtermMouseEvent) => void)(event);
             }
           }
           break;
+        }
 
         default:
           break;

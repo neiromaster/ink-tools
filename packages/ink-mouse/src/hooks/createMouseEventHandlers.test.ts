@@ -15,13 +15,11 @@ type MockGetCachedState = {
   (
     ref: React.RefObject<unknown>,
   ): {
-    isHovering: boolean;
     bounds?: BoundingClientRect;
     boundsTimestamp?: number;
   };
   mockImplementation: (
     fn: (ref: React.RefObject<unknown>) => {
-      isHovering: boolean;
       bounds?: BoundingClientRect;
       boundsTimestamp?: number;
     },
@@ -35,7 +33,7 @@ type MockMouseEvent = MouseEvent & {
 
 describe('createMouseEventHandlers - AAA Tests', () => {
   let mockGetCachedState: MockGetCachedState;
-  let mockHoverStateRef: WeakMap<React.RefObject<unknown>, { isHovering: boolean; bounds?: BoundingClientRect }>;
+  let mockHoverStateRef: WeakMap<React.RefObject<unknown>, boolean>;
   let mockHandlersRef: Map<string, HandlerEntry>;
   let mockElement1: React.RefObject<unknown>;
   let mockElement2: React.RefObject<unknown>;
@@ -63,17 +61,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
     mockGetCachedState = vi.fn().mockImplementation((ref: React.RefObject<unknown>) => {
       if (ref === mockElement1) {
         return {
-          isHovering: false,
           bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
         };
       }
       if (ref === mockElement2) {
         return {
-          isHovering: false,
           bounds: { left: 100, top: 101, right: 130, bottom: 131, x: 100, y: 101, width: 30, height: 30 },
         };
       }
-      return { isHovering: false };
+      return {};
     }) as unknown as MockGetCachedState;
 
     mockHoverStateRef = new WeakMap();
@@ -115,17 +111,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return {
-            isHovering: false,
             bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
           };
         }
         if (ref === overlappingElement) {
           return {
-            isHovering: false,
             bounds: { left: 15, top: 16, right: 65, bottom: 66, x: 15, y: 16, width: 50, height: 50 },
           };
         }
-        return { isHovering: false };
+        return {};
       });
 
       const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
@@ -208,16 +202,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockHandlersRef.set('enter1', { type: 'mouseEnter', ref: mockElement1, handler: enterHandler });
 
       const mockState = {
-        isHovering: false,
         bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
       };
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return mockState;
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, mockState);
+      mockHoverStateRef.set(mockElement1, false); // Not hovering initially
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
@@ -227,7 +220,7 @@ describe('createMouseEventHandlers - AAA Tests', () => {
 
       // Assert
       expect(enterHandler).toHaveBeenCalledWith(mockEvent);
-      expect(mockState.isHovering).toBe(true);
+      expect(mockHoverStateRef.get(mockElement1)).toBe(true); // Hover state updated
     });
 
     test('does NOT fire mouseEnter when already hovering', () => {
@@ -237,16 +230,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockHandlersRef.set('enter1', { type: 'mouseEnter', ref: mockElement1, handler: enterHandler });
 
       const mockState = {
-        isHovering: true,
         bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
       };
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return mockState;
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, mockState);
+      mockHoverStateRef.set(mockElement1, true); // Already hovering
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
@@ -265,16 +257,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockHandlersRef.set('enter1', { type: 'mouseEnter', ref: mockElement1, handler: enterHandler });
 
       const mockState = {
-        isHovering: true,
         bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
       };
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return mockState;
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, mockState);
+      mockHoverStateRef.set(mockElement1, true); // Currently hovering
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 200, y: 200 } as MockMouseEvent;
@@ -282,9 +273,9 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       // Act
       handleMove(mockEvent);
 
-      // Assert - mouse left element, isHovering updated but handler NOT called
+      // Assert - mouse left element, hover state updated but handler NOT called
       expect(enterHandler).not.toHaveBeenCalled();
-      expect(mockState.isHovering).toBe(false);
+      expect(mockHoverStateRef.get(mockElement1)).toBe(false); // Hover state updated
     });
   });
 
@@ -296,16 +287,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockHandlersRef.set('leave1', { type: 'mouseLeave', ref: mockElement1, handler: leaveHandler });
 
       const mockState = {
-        isHovering: true,
         bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
       };
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return mockState;
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, mockState);
+      mockHoverStateRef.set(mockElement1, true); // Currently hovering
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 200, y: 200 } as MockMouseEvent;
@@ -315,7 +305,7 @@ describe('createMouseEventHandlers - AAA Tests', () => {
 
       // Assert
       expect(leaveHandler).toHaveBeenCalledWith(mockEvent);
-      expect(mockState.isHovering).toBe(false);
+      expect(mockHoverStateRef.get(mockElement1)).toBe(false); // Hover state updated
     });
 
     test('does NOT fire mouseLeave when not hovering', () => {
@@ -325,16 +315,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockHandlersRef.set('leave1', { type: 'mouseLeave', ref: mockElement1, handler: leaveHandler });
 
       const mockState = {
-        isHovering: false,
         bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
       };
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return mockState;
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, mockState);
+      mockHoverStateRef.set(mockElement1, false); // Not hovering
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 200, y: 200 } as MockMouseEvent;
@@ -353,16 +342,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockHandlersRef.set('leave1', { type: 'mouseLeave', ref: mockElement1, handler: leaveHandler });
 
       const mockState = {
-        isHovering: false,
         bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
       };
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return mockState;
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, mockState);
+      mockHoverStateRef.set(mockElement1, false); // Not hovering initially
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
@@ -370,9 +358,9 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       // Act
       handleMove(mockEvent);
 
-      // Assert - mouse entered element, isHovering updated but handler NOT called
+      // Assert - mouse entered element, hover state updated but handler NOT called
       expect(leaveHandler).not.toHaveBeenCalled();
-      expect(mockState.isHovering).toBe(true);
+      expect(mockHoverStateRef.get(mockElement1)).toBe(true); // Hover state updated
     });
 
     test('ignores click handlers when handleMove is called', () => {
@@ -382,16 +370,15 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       mockHandlersRef.set('click1', { type: 'click', ref: mockElement1, handler: clickHandler });
 
       const mockState = {
-        isHovering: false,
         bounds: { left: 10, top: 11, right: 60, bottom: 61, x: 10, y: 11, width: 50, height: 50 },
       };
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
           return mockState;
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, mockState);
+      mockHoverStateRef.set(mockElement1, false); // Not hovering
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
@@ -472,7 +459,7 @@ describe('createMouseEventHandlers - AAA Tests', () => {
   describe('Edge Cases', () => {
     test('handles handlers with null bounds gracefully', () => {
       // Arrange
-      mockGetCachedState.mockImplementation(() => ({ isHovering: false }));
+      mockGetCachedState.mockImplementation(() => ({}));
       mockHandlersRef.clear();
       mockHandlersRef.set('noBounds', { type: 'click', ref: mockElement1, handler: mockClickHandler1 });
 
@@ -517,11 +504,11 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       // Mock get cached state to return null bounds for handleMove
       mockGetCachedState.mockImplementation((ref: React.RefObject<unknown>) => {
         if (ref === mockElement1) {
-          return { isHovering: false };
+          return {};
         }
-        return { isHovering: false };
+        return {};
       });
-      mockHoverStateRef.set(mockElement1, { isHovering: false });
+      mockHoverStateRef.set(mockElement1, false);
 
       const { handleMove } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
       const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;

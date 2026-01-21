@@ -4,7 +4,6 @@ import { getBoundingClientRect } from '../geometry';
 import type { BoundingClientRect } from '../types';
 
 type CachedElementState = {
-  isHovering: boolean;
   bounds?: BoundingClientRect;
   boundsTimestamp?: number;
 };
@@ -15,12 +14,15 @@ type CachedElementState = {
  * Provides efficient bounds calculation with configurable cache invalidation.
  * Uses WeakMap for automatic garbage collection when refs are released.
  *
+ * Hover state is tracked separately from bounds cache to prevent race conditions
+ * and ensure clean separation of concerns between geometry tracking and interaction state.
+ *
  * @param cacheInvalidationMs - Cache validity period in milliseconds (default: 100)
- * @returns getCachedState function to retrieve element bounds with caching
+ * @returns Object with getCachedState function and separate hoverStateRef
  *
  * @example
  * ```ts
- * const { getCachedState } = useElementBoundsCache(100);
+ * const { getCachedState, hoverStateRef } = useElementBoundsCache(100);
  * const state = getCachedState(ref);
  * if (state.bounds && isPointInRect(x, y, state.bounds)) {
  *   // Handle event
@@ -29,14 +31,17 @@ type CachedElementState = {
  */
 export function useElementBoundsCache(cacheInvalidationMs: number = 100): {
   getCachedState: (ref: React.RefObject<unknown>) => CachedElementState;
-  hoverStateRef: React.MutableRefObject<WeakMap<React.RefObject<unknown>, CachedElementState>>;
+  hoverStateRef: React.RefObject<WeakMap<React.RefObject<unknown>, boolean>>;
 } {
-  // Track hover state and cached bounds per element (ref)
-  const hoverStateRef = useRef<WeakMap<React.RefObject<unknown>, CachedElementState>>(new WeakMap());
+  // Track cached bounds per element (ref) - geometry only
+  const boundsStateRef = useRef<WeakMap<React.RefObject<unknown>, CachedElementState>>(new WeakMap());
+
+  // Track hover state per element (ref) - interaction state only
+  const hoverStateRef = useRef<WeakMap<React.RefObject<unknown>, boolean>>(new WeakMap());
 
   const getCachedState = useCallback(
     (ref: React.RefObject<unknown>): CachedElementState => {
-      const existing = hoverStateRef.current.get(ref);
+      const existing = boundsStateRef.current.get(ref);
       const now = Date.now();
 
       // Check if cache is valid
@@ -47,12 +52,11 @@ export function useElementBoundsCache(cacheInvalidationMs: number = 100): {
       // Cache miss or expired - recalculate bounds
       const bounds = getBoundingClientRect(ref.current as DOMElement | null);
       const state: CachedElementState = {
-        isHovering: existing?.isHovering ?? false,
         bounds,
         boundsTimestamp: now,
       };
 
-      hoverStateRef.current.set(ref, state);
+      boundsStateRef.current.set(ref, state);
       return state;
     },
     [cacheInvalidationMs],
