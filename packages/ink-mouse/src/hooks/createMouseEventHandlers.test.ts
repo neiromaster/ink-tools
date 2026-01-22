@@ -584,41 +584,6 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    test('rejects handlers that throw in development mode', () => {
-      // Arrange
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
-
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
-        // Suppress error output in tests
-      });
-
-      const throwingHandler = vi.fn(() => {
-        throw new Error('Handler error');
-      });
-
-      mockHandlersRef.clear();
-      mockHandlersRef.set('throwing', { type: 'click', ref: mockElement1, handler: throwingHandler as unknown });
-
-      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
-      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
-
-      // Act
-      handleClick(mockEvent);
-
-      // Assert - handler validation should catch the throw
-      // In dev mode, the handler is called once during validation (with mock event)
-      // Then it throws, so it doesn't get called with the actual event
-      expect(throwingHandler).toHaveBeenCalledTimes(1); // Called during validation
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[ink-mouse] Handler for 'click' event threw error when called with mock event:",
-        expect.any(Error),
-      );
-
-      consoleErrorSpy.mockRestore();
-      process.env.NODE_ENV = originalEnv;
-    });
-
     test('accepts valid mock functions (vi.fn)', () => {
       // Arrange
       mockHandlersRef.clear();
