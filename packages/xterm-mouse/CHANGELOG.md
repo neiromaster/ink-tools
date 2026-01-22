@@ -1,5 +1,77 @@
 # @ink-tools/xterm-mouse
 
+## 1.0.0
+
+### Major Changes
+
+- d11f950: **BREAKING CHANGE**: Refactored `Mouse` class constructor to support full dependency injection via options object.
+
+  **Before:**
+
+  ```typescript
+  new Mouse(inputStream?, outputStream?, emitter?, options?)
+  ```
+
+  **After:**
+
+  ```typescript
+  new Mouse(options?)
+  ```
+
+  All external dependencies (`emitter`, `inputStream`, `outputStream`, `setRawMode`) are now configurable through `MouseOptions`:
+
+  ```typescript
+  const mouse = new Mouse({
+    emitter: customEmitter,        // optional, defaults to new EventEmitter()
+    inputStream: process.stdin,    // optional, defaults to process.stdin
+    outputStream: process.stdout,  // optional, defaults to process.stdout
+    setRawMode: (mode) => {...},   // optional, defaults to stream.setRawMode
+    clickDistanceThreshold: 5,     // optional, defaults to 1
+  });
+  ```
+
+  **Benefits:**
+
+  - Cleaner API with single options parameter
+  - Better testability without mocks
+  - All dependencies injectable
+  - Backward compatible via sensible defaults
+
+  **Migration:**
+
+  ```typescript
+  // Old
+  new Mouse(stream, undefined, undefined, { threshold: 5 });
+
+  // New
+  new Mouse({ inputStream: stream, clickDistanceThreshold: 5 });
+  ```
+
+  Added `examples/custom-streams.ts` demonstrating dependency injection.
+
+### Minor Changes
+
+- f8d500d: Integrate Ink's `useStdin()` and `useStdout()` hooks for proper stream management.
+
+  **@ink-tools/ink-mouse:**
+
+  - `useMouseInstance` now uses Ink's `useStdin()` and `useStdout()` hooks
+  - Passes Ink-managed streams to `xterm-mouse` for proper integration
+  - Raw mode control delegated to `xterm-mouse` via `setRawMode`
+
+  **xterm-mouse:**
+
+  - `Mouse.isSupported()` now accepts optional `inputStream` and `outputStream` parameters
+  - Implements method via `checkSupport()` for DRY principle
+  - Backwards compatible - defaults to `process.stdin`/`process.stdout`
+
+  **Benefits:**
+
+  - Proper integration with Ink's stream management
+  - Consistent with Ink ecosystem patterns
+  - Better type safety for custom streams
+  - Clear ownership of raw mode (xterm-mouse)
+
 ## 0.7.6
 
 ### Patch Changes
