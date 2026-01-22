@@ -520,4 +520,204 @@ describe('createMouseEventHandlers - AAA Tests', () => {
       expect(moveHandler).not.toHaveBeenCalled();
     });
   });
+
+  describe('Handler Validation - Security Tests', () => {
+    test('rejects non-function handlers', () => {
+      // Arrange
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+        // Suppress error output in tests
+      });
+
+      mockHandlersRef.clear();
+      mockHandlersRef.set('nonFunction', { type: 'click', ref: mockElement1, handler: 'not a function' as unknown });
+
+      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleClick(mockEvent);
+
+      // Assert - handler should NOT be called
+      expect(mockClickHandler1).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid handler for 'click' event: expected a function, got string"),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('rejects handlers with too many parameters', () => {
+      // Arrange
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+        // Suppress error output in tests
+      });
+
+      const badHandler = (
+        _a: unknown,
+        _b: unknown,
+        _c: unknown,
+        _d: unknown,
+        _e: unknown,
+        _f: unknown,
+        _g: unknown,
+        _h: unknown,
+        _i: unknown,
+        _j: unknown,
+        _k: unknown,
+      ) => {
+        // Function with 11 parameters (suspicious)
+      };
+
+      mockHandlersRef.clear();
+      mockHandlersRef.set('tooManyParams', { type: 'click', ref: mockElement1, handler: badHandler as unknown });
+
+      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleClick(mockEvent);
+
+      // Assert - handler should NOT be called (we can't check this with regular functions)
+      expect(mockClickHandler1).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('function has unusual parameter count'));
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('rejects handlers that throw in development mode', () => {
+      // Arrange
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+        // Suppress error output in tests
+      });
+
+      const throwingHandler = vi.fn(() => {
+        throw new Error('Handler error');
+      });
+
+      mockHandlersRef.clear();
+      mockHandlersRef.set('throwing', { type: 'click', ref: mockElement1, handler: throwingHandler as unknown });
+
+      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleClick(mockEvent);
+
+      // Assert - handler validation should catch the throw
+      // In dev mode, the handler is called once during validation (with mock event)
+      // Then it throws, so it doesn't get called with the actual event
+      expect(throwingHandler).toHaveBeenCalledTimes(1); // Called during validation
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[ink-mouse] Handler for 'click' event threw error when called with mock event:",
+        expect.any(Error),
+      );
+
+      consoleErrorSpy.mockRestore();
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    test('accepts valid mock functions (vi.fn)', () => {
+      // Arrange
+      mockHandlersRef.clear();
+      mockHandlersRef.set('validMock', { type: 'click', ref: mockElement1, handler: mockClickHandler1 as unknown });
+
+      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleClick(mockEvent);
+
+      // Assert - handler should be called (vi.fn is valid)
+      expect(mockClickHandler1).toHaveBeenCalledWith(mockEvent);
+    });
+
+    test('accepts valid arrow functions', () => {
+      // Arrange
+      const arrowHandler = vi.fn();
+
+      mockHandlersRef.clear();
+      mockHandlersRef.set('arrowHandler', { type: 'click', ref: mockElement1, handler: arrowHandler as unknown });
+
+      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleClick(mockEvent);
+
+      // Assert - handler should be called
+      expect(arrowHandler).toHaveBeenCalledWith(mockEvent);
+    });
+
+    test('does not crash on prototype pollution attempts', () => {
+      // Arrange
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+        // Suppress error output in tests
+      });
+
+      // Attempt to create a polluted object (though in JS this is hard to exploit)
+      const polluted = Object.create(null);
+      polluted.toString = () => 'malicious';
+
+      mockHandlersRef.clear();
+      mockHandlersRef.set('polluted', { type: 'click', ref: mockElement1, handler: polluted as unknown });
+
+      const { handleClick } = createMouseEventHandlers(mockGetCachedState, mockHoverStateRef, mockHandlersRef);
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act - should not throw
+      expect(() => handleClick(mockEvent)).not.toThrow();
+
+      // Assert - handler was rejected (not a function)
+      expect(mockClickHandler1).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('validates all event types', () => {
+      // Arrange
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+        // Suppress error output in tests
+      });
+
+      const validHandler = vi.fn();
+      const invalidHandler = 'not a function' as unknown;
+
+      mockHandlersRef.clear();
+      // Register handlers on mockElement1 which is at (10, 10) to (60, 60)
+      // The click at (15, 15) will hit this element, triggering validation
+      mockHandlersRef.set('validClick', { type: 'click', ref: mockElement1, handler: validHandler });
+      mockHandlersRef.set('invalidClick', { type: 'click', ref: mockElement1, handler: invalidHandler });
+      mockHandlersRef.set('validWheel', { type: 'wheel', ref: mockElement1, handler: validHandler });
+      mockHandlersRef.set('invalidWheel', { type: 'wheel', ref: mockElement1, handler: invalidHandler });
+
+      const { handleClick, handleWheel } = createMouseEventHandlers(
+        mockGetCachedState,
+        mockHoverStateRef,
+        mockHandlersRef,
+      );
+      const mockEvent: MockMouseEvent = { x: 15, y: 15 } as MockMouseEvent;
+
+      // Act
+      handleClick(mockEvent);
+      handleWheel(mockEvent);
+
+      // Assert - valid handler called for both click and wheel
+      expect(validHandler).toHaveBeenCalledTimes(2);
+
+      // Assert - invalid handlers logged errors for both click and wheel
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid handler for 'click' event: expected a function, got string"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid handler for 'wheel' event: expected a function, got string"),
+      );
+
+      consoleErrorSpy.mockRestore();
+    });
+  });
 });
