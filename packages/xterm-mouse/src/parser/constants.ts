@@ -9,8 +9,17 @@
  *
  * ESC format: ESC[MCbCxCy where:
  * - Cb, Cx, Cy are single characters (6 chars total)
+ *
+ * **Security:** Deeply frozen to prevent prototype pollution attacks.
  */
-const MAX_EVENT_LENGTHS = {
+import { type DeepReadonly, deepFreeze } from '../utils/freeze';
+
+type MaxEventLengths = {
+  sgr: 21;
+  esc: 6;
+};
+
+const MAX_EVENT_LENGTHS: DeepReadonly<MaxEventLengths> = deepFreeze({
   /**
    * SGR format with bounded quantifiers
    * ESC[< + 3 digits + ; + 4 digits + ; + 4 digits + M/m = 21 chars
@@ -21,13 +30,35 @@ const MAX_EVENT_LENGTHS = {
    * ESC format: ESC[M + 3 chars = 6 chars
    */
   esc: 6,
-} as const;
+});
 
 /**
  * ANSI escape codes for enabling and disabling different mouse tracking modes in terminals.
  * These codes are used to control how the terminal reports mouse events.
+ *
+ * **Security:** All objects are deeply frozen to prevent prototype pollution attacks
+ * and tampering at runtime.
  */
-const ANSI_CODES = {
+type AnsiCodes = {
+  mouseButton: {
+    on: '\x1b[?1000h';
+    off: '\x1b[?1000l';
+  };
+  mouseDrag: {
+    on: '\x1b[?1002h';
+    off: '\x1b[?1002l';
+  };
+  mouseMotion: {
+    on: '\x1b[?1003h';
+    off: '\x1b[?1003l';
+  };
+  mouseSGR: {
+    on: '\x1b[?1006h';
+    off: '\x1b[?1006l';
+  };
+};
+
+const ANSI_CODES: DeepReadonly<AnsiCodes> = deepFreeze({
   // Terminal will send event on button pressed with mouse position
   // SET_VT200_MOUSE
   mouseButton: { on: '\x1b[?1000h', off: '\x1b[?1000l' },
@@ -43,7 +74,7 @@ const ANSI_CODES = {
   // Another mouse protocol that extend coordinate mapping (without it, it supports only 223 rows and columns)
   // SET_SGR_EXT_MODE_MOUSE
   mouseSGR: { on: '\x1b[?1006h', off: '\x1b[?1006l' },
-};
+});
 
 /**
  * Regular expression patterns for parsing ANSI escape sequences that contain mouse event data.

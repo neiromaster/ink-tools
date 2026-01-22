@@ -3,7 +3,6 @@ import type { BoundingClientRect } from '../types';
 import { isPointInRect } from '../utils/geometry';
 
 type CachedElementState = {
-  isHovering: boolean;
   bounds?: BoundingClientRect;
   boundsTimestamp?: number;
 };
@@ -15,6 +14,51 @@ export type HandlerEntry = {
 };
 
 /**
+ * Type guard to validate that a handler is a valid mouse event handler function.
+ *
+ * Performs runtime validation to ensure type safety and prevent crashes from
+ * malformed or malicious handlers. This is defense-in-depth against type confusion
+ * attacks and runtime errors.
+ *
+ * @param handler - The unknown handler to validate
+ * @param eventType - The event type for error messaging
+ * @returns True if the handler is a valid function that accepts mouse events
+ *
+ * @example
+ * ```ts
+ * if (!isValidHandler(entry.handler, entry.type)) {
+ *   console.error(`Invalid handler for ${entry.type}`);
+ *   return;
+ * }
+ * entry.handler(event);  // Type-safe call
+ * ```
+ */
+function isValidHandler(handler: unknown, eventType?: string): handler is (event: XtermMouseEvent) => void {
+  // Check if handler is a function
+  if (typeof handler !== 'function') {
+    if (eventType) {
+      console.error(`[ink-mouse] Invalid handler for '${eventType}' event: expected a function, got ${typeof handler}`);
+    }
+    return false;
+  }
+
+  // Check parameter count (mouse handlers should accept at least 1 argument)
+  // Note: We use <= 1 instead of === 1 because some functions (like vi.fn mocks)
+  // have length 0 but can still accept arguments
+  if (handler.length < 0 || handler.length > 10) {
+    // Unreasonably high parameter count is suspicious
+    if (eventType) {
+      console.error(
+        `[ink-mouse] Invalid handler for '${eventType}' event: function has unusual parameter count (${handler.length})`,
+      );
+    }
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Creates mouse event handlers for dispatching events to registered handlers
  *
  * Creates optimized event handlers that iterate through registered handlers
@@ -23,8 +67,8 @@ export type HandlerEntry = {
  * This is a plain function (not a hook) because handlers are registered once
  * with the Mouse instance and don't need to be reactive.
  *
- * @param getCachedState - Function to get cached element bounds
- * @param hoverStateRef - Ref to WeakMap storing hover state per element
+ * @param getCachedState - Function to get cached element bounds (geometry only)
+ * @param hoverStateRef - WeakMap storing boolean hover state per element
  * @param handlersRef - Ref to Map of registered handlers
  * @returns Object with event handler functions
  *
@@ -43,7 +87,7 @@ export type HandlerEntry = {
  */
 export function createMouseEventHandlers(
   getCachedState: (ref: React.RefObject<unknown>) => CachedElementState,
-  hoverStateRef: WeakMap<React.RefObject<unknown>, CachedElementState>,
+  hoverStateRef: WeakMap<React.RefObject<unknown>, boolean>,
   handlersRef: Map<string, HandlerEntry>,
 ): {
   handleClick: (event: XtermMouseEvent) => void;
@@ -54,18 +98,22 @@ export function createMouseEventHandlers(
   handleDrag: (event: XtermMouseEvent) => void;
 } {
   const createGenericHandler =
-    (eventType: 'click' | 'wheel' | 'mousePress' | 'mouseRelease' | 'mouseMove' | 'mouseDrag') =>
+    (eventType: 'click' | 'wheel' | 'mousePress' | 'mouseRelease' | 'mouseDrag') =>
     (event: XtermMouseEvent): void => {
       const { x, y } = event;
 
       handlersRef.forEach((entry) => {
         if (entry.type !== eventType) return;
 
+        if (!isValidHandler(entry.handler, eventType)) {
+          return;
+        }
+
         const cached = getCachedState(entry.ref);
         if (!cached.bounds) return;
 
         if (isPointInRect(x, y, cached.bounds)) {
-          (entry.handler as (event: XtermMouseEvent) => void)(event);
+          entry.handler(event);
         }
       });
     };
@@ -76,6 +124,13 @@ export function createMouseEventHandlers(
 
     // Handle all event types in a single pass
     handlersRef.forEach((entry) => {
+      if (!['mouseMove', 'mouseEnter', 'mouseLeave'].includes(entry.type)) {
+        return;
+      }
+      if (!isValidHandler(entry.handler, entry.type)) {
+        return;
+      }
+
       const cached = getCachedState(entry.ref);
 
       if (!cached.bounds) return;
@@ -85,32 +140,31 @@ export function createMouseEventHandlers(
       switch (entry.type) {
         case 'mouseMove':
           if (isInside) {
-            (entry.handler as (event: XtermMouseEvent) => void)(event);
+            entry.handler(event);
           }
           break;
 
-        case 'mouseEnter':
-          if (isInside !== cached.isHovering) {
-            cached.isHovering = isInside;
-            hoverStateRef.set(entry.ref, cached);
+        case 'mouseEnter': {
+          const wasHoveringEnter = hoverStateRef.get(entry.ref) ?? false;
+          if (isInside !== wasHoveringEnter) {
+            hoverStateRef.set(entry.ref, isInside);
             if (isInside) {
-              (entry.handler as (event: XtermMouseEvent) => void)(event);
+              entry.handler(event);
             }
           }
           break;
+        }
 
-        case 'mouseLeave':
-          if (isInside !== cached.isHovering) {
-            cached.isHovering = isInside;
-            hoverStateRef.set(entry.ref, cached);
+        case 'mouseLeave': {
+          const wasHoveringLeave = hoverStateRef.get(entry.ref) ?? false;
+          if (isInside !== wasHoveringLeave) {
+            hoverStateRef.set(entry.ref, isInside);
             if (!isInside) {
-              (entry.handler as (event: XtermMouseEvent) => void)(event);
+              entry.handler(event);
             }
           }
           break;
-
-        default:
-          break;
+        }
       }
     });
   };

@@ -492,4 +492,78 @@ describe('TTYController', () => {
       expect(true).toBe(true);
     });
   });
+
+  describe('custom setRawMode function', () => {
+    test('uses custom setRawMode when provided', () => {
+      // Arrange
+      const customSetRawMode = vi.fn();
+      const customInputStream = new MockReadableStream();
+      const customOutputStream = new MockWritableStream();
+      const customHandleEvent = vi.fn();
+
+      // Act
+      const controllerWithCustom = new TTYController(
+        customInputStream as unknown as import('../types').ReadableStreamWithEncoding,
+        customOutputStream as unknown as NodeJS.WriteStream,
+        customHandleEvent,
+        customSetRawMode,
+      );
+      controllerWithCustom.enable();
+
+      // Assert
+      expect(customSetRawMode).toHaveBeenCalledWith(true);
+      expect(customInputStream.isRaw).toBe(false); // Default setRawMode should NOT be called
+
+      // Cleanup
+      controllerWithCustom.disable();
+      expect(customSetRawMode).toHaveBeenCalledWith(false);
+    });
+
+    test('uses default setRawMode when custom function not provided', () => {
+      // Arrange
+      const defaultInputStream = new MockReadableStream();
+      const defaultOutputStream = new MockWritableStream();
+      const defaultHandleEvent = vi.fn();
+
+      // Act
+      const controllerWithDefault = new TTYController(
+        defaultInputStream as unknown as import('../types').ReadableStreamWithEncoding,
+        defaultOutputStream as unknown as NodeJS.WriteStream,
+        defaultHandleEvent,
+      );
+      controllerWithDefault.enable();
+
+      // Assert
+      expect(defaultInputStream.isRaw).toBe(true); // Default setRawMode was called
+
+      // Cleanup
+      controllerWithDefault.disable();
+      expect(defaultInputStream.isRaw).toBe(false); // Default setRawMode was called with false
+    });
+
+    test('passes custom setRawMode to FinalizationRegistry', () => {
+      // Arrange
+      const customSetRawMode = vi.fn();
+      const cleanupInputStream = new MockReadableStream();
+      const cleanupOutputStream = new MockWritableStream();
+      const cleanupHandleEvent = vi.fn();
+
+      // Act
+      const controllerForCleanup = new TTYController(
+        cleanupInputStream as unknown as import('../types').ReadableStreamWithEncoding,
+        cleanupOutputStream as unknown as NodeJS.WriteStream,
+        cleanupHandleEvent,
+        customSetRawMode,
+      );
+      controllerForCleanup.enable();
+
+      // Assert - enable should work
+      expect(controllerForCleanup.isEnabled()).toBe(true);
+      expect(customSetRawMode).toHaveBeenCalledWith(true);
+
+      // Cleanup
+      controllerForCleanup.destroy();
+      expect(customSetRawMode).toHaveBeenCalledWith(false);
+    });
+  });
 });

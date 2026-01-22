@@ -55,7 +55,8 @@
     "dev:pause-resume": "vite-node --watch examples/pause-resume.ts",
     "dev:interactive-buttons": "vite-node --watch examples/interactive-buttons.ts",
     "dev:interactive-menu": "vite-node --watch examples/interactive-menu.ts",
-    "dev:interactive-grid": "vite-node --watch examples/interactive-grid.ts"
+    "dev:interactive-grid": "vite-node --watch examples/interactive-grid.ts",
+    "dev:custom-streams": "vite-node --watch examples/custom-streams.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",

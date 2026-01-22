@@ -1,6 +1,7 @@
 import { ANSI_CODES } from '../parser/constants';
 import type { ReadableStreamWithEncoding } from '../types';
 import { MouseError } from '../types';
+import { validateFunction, validateReadableStream, validateWritableStream } from '../utils/validation';
 
 /**
  * FinalizationRegistry for automatic cleanup of TTY controllers.
@@ -20,6 +21,7 @@ const ttyCleanupRegistry: FinalizationRegistry<{
   outputStream: NodeJS.WriteStream;
   previousRawMode: boolean | null;
   isRaw: boolean | null;
+  setRawModeFn?: (mode: boolean) => void;
 }> = new FinalizationRegistry(
   (heldValue: {
     inputStream: ReadableStreamWithEncoding;
@@ -27,6 +29,7 @@ const ttyCleanupRegistry: FinalizationRegistry<{
     outputStream: NodeJS.WriteStream;
     previousRawMode: boolean | null;
     isRaw: boolean | null;
+    setRawModeFn?: (mode: boolean) => void;
   }) => {
     try {
       heldValue.inputStream.off('data', heldValue.handleEvent);
@@ -36,7 +39,11 @@ const ttyCleanupRegistry: FinalizationRegistry<{
 
     try {
       if (heldValue.isRaw) {
-        heldValue.inputStream.setRawMode(false);
+        if (heldValue.setRawModeFn) {
+          heldValue.setRawModeFn(false);
+        } else {
+          heldValue.inputStream.setRawMode(false);
+        }
       }
       heldValue.inputStream.pause();
     } catch {
@@ -67,13 +74,37 @@ export class TTYController {
   private paused = false;
   private previousEncoding: BufferEncoding | null = null;
   private previousRawMode: boolean | null = null;
+  private currentRawMode: boolean | null = null;
   private cleanupToken: { instance: TTYController } | null = null;
 
   constructor(
     private inputStream: ReadableStreamWithEncoding,
     private outputStream: NodeJS.WriteStream,
     private handleEvent: (data: Buffer) => void,
-  ) {}
+    private setRawModeFn?: (mode: boolean) => void,
+  ) {
+    validateReadableStream(inputStream, 'inputStream');
+    // biome-ignore lint/security/noSecrets: stream name
+    validateWritableStream(outputStream, 'outputStream');
+    validateFunction(handleEvent, 'handleEvent');
+
+    if (setRawModeFn !== undefined) {
+      // biome-ignore lint/security/noSecrets: function name
+      validateFunction(setRawModeFn, 'setRawModeFn');
+    }
+  }
+
+  /**
+   * Sets raw mode on the input stream using either the custom function
+   * or the default stream.setRawMode method.
+   */
+  private setRawMode(mode: boolean): void {
+    if (this.setRawModeFn) {
+      this.setRawModeFn(mode);
+    } else {
+      this.inputStream.setRawMode(mode);
+    }
+  }
 
   /**
    * Enables mouse event tracking.
@@ -94,7 +125,7 @@ export class TTYController {
     }
 
     try {
-      this.previousRawMode = this.inputStream.isRaw ?? false;
+      this.previousRawMode = this.setRawModeFn ? (this.currentRawMode ?? false) : (this.inputStream.isRaw ?? false);
       this.previousEncoding = this.inputStream.readableEncoding || null;
 
       this.enabled = true;
@@ -103,7 +134,8 @@ export class TTYController {
         ANSI_CODES.mouseButton.on + ANSI_CODES.mouseDrag.on + ANSI_CODES.mouseMotion.on + ANSI_CODES.mouseSGR.on,
       );
 
-      this.inputStream.setRawMode(true);
+      this.setRawMode(true);
+      this.currentRawMode = true;
       this.inputStream.setEncoding('utf8');
       this.inputStream.resume();
       this.inputStream.on('data', this.handleEvent);
@@ -117,6 +149,7 @@ export class TTYController {
           outputStream: this.outputStream,
           previousRawMode: this.previousRawMode,
           isRaw: this.inputStream.isRaw ?? false,
+          setRawModeFn: this.setRawModeFn,
         },
         this.cleanupToken,
       );
@@ -150,7 +183,8 @@ export class TTYController {
       this.inputStream.pause();
 
       if (this.previousRawMode !== null) {
-        this.inputStream.setRawMode(this.previousRawMode);
+        this.setRawMode(this.previousRawMode);
+        this.currentRawMode = this.previousRawMode;
       }
 
       if (this.previousEncoding !== null) {
@@ -169,6 +203,7 @@ export class TTYController {
       this.enabled = false;
       this.previousRawMode = null;
       this.previousEncoding = null;
+      this.currentRawMode = null;
     }
   };
 

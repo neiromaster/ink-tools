@@ -1,0 +1,30 @@
+{
+  "name": "@ink-tools/demo",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "description": "Demo application showcasing all ink-tools packages",
+  "scripts": {
+    "dev": "vite-node --watch src/index.tsx",
+    "start": "vite-node src/index.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ink-tools/ink-mouse": "workspace:*",
+    "ink": "^6.6.0",
+    "react": "^19.2.3",
+    "xterm-mouse": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "@types/react": "^19.2.7",
+    "tsup": "^8.5.1",
+    "vite-node": "^5.3.0",
+    "typescript": "^5",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "@vitejs/plugin-react": "^5.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
