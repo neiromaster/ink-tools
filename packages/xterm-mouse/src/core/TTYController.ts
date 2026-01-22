@@ -1,6 +1,7 @@
 import { ANSI_CODES } from '../parser/constants';
 import type { ReadableStreamWithEncoding } from '../types';
 import { MouseError } from '../types';
+import { validateFunction, validateReadableStream, validateWritableStream } from '../utils/validation';
 
 /**
  * FinalizationRegistry for automatic cleanup of TTY controllers.
@@ -81,7 +82,17 @@ export class TTYController {
     private outputStream: NodeJS.WriteStream,
     private handleEvent: (data: Buffer) => void,
     private setRawModeFn?: (mode: boolean) => void,
-  ) {}
+  ) {
+    validateReadableStream(inputStream, 'inputStream');
+    // biome-ignore lint/security/noSecrets: stream name
+    validateWritableStream(outputStream, 'outputStream');
+    validateFunction(handleEvent, 'handleEvent');
+
+    if (setRawModeFn !== undefined) {
+      // biome-ignore lint/security/noSecrets: function name
+      validateFunction(setRawModeFn, 'setRawModeFn');
+    }
+  }
 
   /**
    * Sets raw mode on the input stream using either the custom function

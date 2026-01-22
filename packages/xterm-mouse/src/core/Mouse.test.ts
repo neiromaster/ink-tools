@@ -240,6 +240,10 @@ test('Mouse enable should throw error when inputStream is not TTY', () => {
   // Arrange: Create a stream that is not a TTY
   const nonTTYStream = new EventEmitter() as ReadableStreamWithEncoding;
   nonTTYStream.isTTY = false; // Explicitly set isTTY to false
+  nonTTYStream.pause = vi.fn();
+  nonTTYStream.resume = vi.fn();
+  nonTTYStream.setEncoding = vi.fn();
+  nonTTYStream.readableEncoding = null;
 
   const mouse = new Mouse({ inputStream: nonTTYStream });
 
