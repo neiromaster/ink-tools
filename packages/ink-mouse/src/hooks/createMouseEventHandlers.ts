@@ -55,31 +55,6 @@ function isValidHandler(handler: unknown, eventType?: string): handler is (event
     return false;
   }
 
-  // In development mode, test with a mock event to catch handlers that throw
-  if (process.env.NODE_ENV === 'development') {
-    try {
-      const mockEvent = {
-        x: 0,
-        y: 0,
-        button: 'left',
-        action: 'move',
-        modifiers: { shift: false, alt: false, ctrl: false },
-      } as const;
-
-      // Call with mock event to test if handler can handle it
-      handler.call(null, mockEvent);
-
-      // If we get here, the handler didn't throw, but we don't know if it
-      // actually used the event parameter correctly. That's okay - this is
-      // just a smoke test to catch obviously broken handlers.
-    } catch (error) {
-      if (eventType) {
-        console.error(`[ink-mouse] Handler for '${eventType}' event threw error when called with mock event:`, error);
-      }
-      return false;
-    }
-  }
-
   return true;
 }
 
